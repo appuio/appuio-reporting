@@ -106,12 +106,20 @@ This can be achieved by running `make docker-compose-up`.
 See `docker-compose.yml` for the configuration.
 
 ```sh
-createdb appuio-cloud-reporting-test
-export ACR_DB_URL="postgres://localhost/appuio-cloud-reporting-test?sslmode=disable"
+# Needs to be repeated after a Docker restart
+make docker-compose-up  
+
+# Next command asks for a password, it is "reporting"
+createdb --username=reporting -h localhost -p 5432 appuio-cloud-reporting-test
+
+export ACR_DB_URL="postgres://reporting:reporting@localhost/appuio-cloud-reporting-test?sslmode=disable"
 
 go run . migrate
 go run . migrate --seed
 go test ./...
+
+# To connect to the DB:
+psql -U reporting -W -h localhost appuio-cloud-reporting-test
 ```
 
 ### IDE Integration
