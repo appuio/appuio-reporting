@@ -8,6 +8,7 @@ import (
 
 	"github.com/appuio/appuio-cloud-reporting/pkg/db"
 	"github.com/appuio/appuio-cloud-reporting/pkg/report"
+	"github.com/appuio/appuio-cloud-reporting/pkg/thanos"
 	"github.com/jmoiron/sqlx"
 	"github.com/prometheus/client_golang/api"
 	apiv1 "github.com/prometheus/client_golang/api/prometheus/v1"
@@ -21,6 +22,8 @@ type reportCommand struct {
 	Begin            *time.Time
 	RepeatUntil      *time.Time
 	PromQueryTimeout time.Duration
+
+	ThanosAllowPartialResponses bool
 }
 
 var reportCommandName = "report"
@@ -43,6 +46,8 @@ func newReportCommand() *cli.Command {
 				EnvVars: envVars("REPEAT_UNTIL"), Layout: time.RFC3339, Required: false},
 			&cli.DurationFlag{Name: "prom-query-timeout", Usage: "Timeout when querying prometheus (example: 1m)",
 				EnvVars: envVars("PROM_QUERY_TIMEOUT"), Destination: &command.PromQueryTimeout, Required: false},
+			&cli.BoolFlag{Name: "thanos-allow-partial-responses", Usage: "Allows partial responses from Thanos. Can be helpful when querying a Thanos cluster with lost data.",
+				EnvVars: envVars("THANOS_ALLOW_PARTIAL_RESPONSES"), Destination: &command.ThanosAllowPartialResponses, Required: false, DefaultText: "false"},
 		},
 	}
 }
@@ -57,7 +62,7 @@ func (cmd *reportCommand) execute(cliCtx *cli.Context) error {
 	ctx := cliCtx.Context
 	log := AppLogger(ctx).WithName(reportCommandName)
 
-	promClient, err := newPrometheusAPIClient(cmd.PrometheusURL)
+	promClient, err := newPrometheusAPIClient(cmd.PrometheusURL, cmd.ThanosAllowPartialResponses)
 	if err != nil {
 		return fmt.Errorf("could not create prometheus client: %w", err)
 	}
@@ -123,9 +128,13 @@ func (cmd *reportCommand) runReport(ctx context.Context, db *sqlx.DB, promClient
 	return tx.Commit()
 }
 
-func newPrometheusAPIClient(promURL string) (apiv1.API, error) {
+func newPrometheusAPIClient(promURL string, thanosAllowPartialResponses bool) (apiv1.API, error) {
 	client, err := api.NewClient(api.Config{
 		Address: promURL,
+		RoundTripper: &thanos.PartialResponseRoundTripper{
+			RoundTripper: api.DefaultRoundTripper,
+			Allow:        thanosAllowPartialResponses,
+		},
 	})
 	return apiv1.NewAPI(client), err
 }
