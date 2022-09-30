@@ -15,7 +15,7 @@ require (
 	github.com/prometheus/common v0.35.0
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.11.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.23.0
 )
 
 require (
