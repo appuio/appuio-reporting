@@ -11,8 +11,8 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lopezator/migrator v0.3.1
-	github.com/prometheus/client_golang v1.12.2
-	github.com/prometheus/common v0.35.0
+	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/common v0.37.0
 	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.11.0
 	go.uber.org/zap v1.21.0
