@@ -15,7 +15,7 @@ import (
 )
 
 type PromQuerier interface {
-	Query(ctx context.Context, query string, ts time.Time) (model.Value, apiv1.Warnings, error)
+	Query(ctx context.Context, query string, ts time.Time, opts ...apiv1.Option) (model.Value, apiv1.Warnings, error)
 }
 
 // RunRange executes prometheus queries like Run() until the `until` timestamp is reached or an error occurred.

@@ -54,7 +54,7 @@ type fakeQuerier struct {
 	queries map[string]fakeQueryResults
 }
 
-func (q fakeQuerier) Query(ctx context.Context, query string, ts time.Time) (model.Value, apiv1.Warnings, error) {
+func (q fakeQuerier) Query(ctx context.Context, query string, ts time.Time, _ ...apiv1.Option) (model.Value, apiv1.Warnings, error) {
 	var res model.Vector
 	for k, s := range q.queries[query] {
 		sk, err := sourcekey.Parse(k)
