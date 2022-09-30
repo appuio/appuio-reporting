@@ -36,6 +36,17 @@ func TestParseWithoutClass(t *testing.T) {
 	})
 }
 
+func TestParseWithEmptyClass(t *testing.T) {
+	k, err := sourcekey.Parse("appuio_cloud_storage:c-appuio-cloudscale-lpg-2:acme-corp:sparkling-sound-1234:")
+	require.NoError(t, err)
+	require.Equal(t, k, sourcekey.SourceKey{
+		Query:     "appuio_cloud_storage",
+		Zone:      "c-appuio-cloudscale-lpg-2",
+		Tenant:    "acme-corp",
+		Namespace: "sparkling-sound-1234",
+	})
+}
+
 func TestStringWithClass(t *testing.T) {
 	key := sourcekey.SourceKey{
 		Query:     "appuio_cloud_storage",
