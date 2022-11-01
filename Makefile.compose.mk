@@ -1,6 +1,10 @@
 .PHONY: docker-compose-up
 docker-compose-up: ## Starts up docker compose services
 	@$(COMPOSE_CMD) -f $(COMPOSE_FILE) $(compose_args) up --detach
+	@echo ''
+	@echo '  To connect to the DB:'
+	@echo '  $$ psql postgres://reporting:reporting@localhost/appuio-cloud-reporting-test'
+	@echo ''
 
 .PHONY: docker-compose-down
 docker-compose-down: ## Stops docker compose services
