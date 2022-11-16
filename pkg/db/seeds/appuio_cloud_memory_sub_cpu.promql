@@ -13,7 +13,8 @@ sum_over_time(
             (
               sum by(cluster_id, namespace, label_appuio_io_node_class) (
                 # Get the CPU requests
-                kube_pod_container_resource_requests{resource="cpu"} * on(uid, cluster_id, pod, namespace) group_left kube_pod_status_phase{phase="Running"} * on(node) group_left(label_appuio_io_node_class) kube_node_labels
+                kube_pod_container_resource_requests{resource="cpu"} * on(uid, cluster_id, pod, namespace) group_left kube_pod_status_phase{phase="Running"}
+                  * on(node) group_left(label_appuio_io_node_class) (kube_node_labels{label_appuio_io_node_class!=""} or on(node) kube_node_labels{label_appuio_io_node_class=""})
                 # Convert them to their memory equivalent by multiplying them by the memory to CPU ratio
                 # Build that ratio from static values
                 * on(cluster_id) group_left()(
@@ -23,7 +24,8 @@ sum_over_time(
                   or label_replace(vector(5333057536), "cluster_id", "c-appuio-exoscale-ch-gva-2-0", "", "")
                 )
               )
-              - sum by(cluster_id, namespace, label_appuio_io_node_class) (kube_pod_container_resource_requests{resource="memory"} * on(uid, cluster_id, pod, namespace) group_left kube_pod_status_phase{phase="Running"} * on(node) group_left(label_appuio_io_node_class) kube_node_labels)
+              - sum by(cluster_id, namespace, label_appuio_io_node_class) (kube_pod_container_resource_requests{resource="memory"} * on(uid, cluster_id, pod, namespace) group_left kube_pod_status_phase{phase="Running"}
+                * on(node) group_left(label_appuio_io_node_class) (kube_node_labels{label_appuio_io_node_class!=""} or on(node) kube_node_labels{label_appuio_io_node_class=""}))
             )
             *
             # Join namespace label `label_appuio_io_organization` as `tenant_id`.
