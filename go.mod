@@ -13,7 +13,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lopezator/migrator v0.3.1
 	github.com/prometheus/client_golang v1.14.0
-	github.com/prometheus/common v0.37.0
+	github.com/prometheus/common v0.39.0
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli/v2 v2.23.5
 	go.uber.org/zap v1.23.0
@@ -38,7 +38,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.1.0 // indirect
