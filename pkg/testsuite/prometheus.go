@@ -14,8 +14,12 @@ var (
 
 	// Root folder of this project
 	Root = filepath.Join(filepath.Dir(b), "..", "..")
+	// PromDir is the filepath to the prometheus directory
+	PromDir = filepath.Join(Root, ".cache", "prometheus")
 	// PromBin is the filepath to the Prometheus binary
-	PromBin = filepath.Join(Root, ".cache", "prometheus", "prometheus")
+	PromBin = filepath.Join(PromDir, "prometheus")
+	// PromtoolBin is the filepath to the promtool binary
+	PromtoolBin = filepath.Join(PromDir, "promtool")
 )
 
 // StartPrometheus starts a new prometheus instance on the given port.

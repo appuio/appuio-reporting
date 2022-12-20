@@ -19,7 +19,7 @@ COMPOSE_CMD ?= docker-compose
 COMPOSE_DB_URL ?= postgres://reporting:reporting@localhost:55432/reporting-db?sslmode=disable
 COMPOSE_FILE ?= docker-compose.yml
 
-PROMETHEUS_VERSION ?= 2.32.1
+PROMETHEUS_VERSION ?= 2.40.7
 PROMETHEUS_DIST ?= $(shell go env GOOS)
 PROMETHEUS_ARCH ?= $(shell go env GOARCH)
 PROMETHEUS_DOWNLOAD_LINK ?= https://github.com/prometheus/prometheus/releases/download/v$(PROMETHEUS_VERSION)/prometheus-$(PROMETHEUS_VERSION).$(PROMETHEUS_DIST)-$(PROMETHEUS_ARCH).tar.gz
