@@ -12,8 +12,6 @@ local commonLabels = {
 // One running pod, minimal (=1 byte) memory request and usage, no CPU request
 // 10 samples
 local baseSeries = {
-  local runningUID = '35e3a8b1-b46d-496c-b2b7-1b52953bf904',
-
   flexNodeLabel: c.series('kube_node_labels', commonLabels {
     label_appuio_io_node_class: 'flex',
     label_kubernetes_io_hostname: 'flex-x666',
@@ -23,35 +21,29 @@ local baseSeries = {
     namespace: 'testproject',
     label_appuio_io_organization: 'cherry-pickers-inc',
   }, '1x10'),
-  // Phases
-  runningPodPhase: c.series('kube_pod_status_phase', commonLabels {
+
+  local podLbls = commonLabels {
     namespace: 'testproject',
-    phase: 'Running',
     pod: 'running-pod',
-    uid: runningUID,
+    uid: '35e3a8b1-b46d-496c-b2b7-1b52953bf904',
+  },
+  // Phases
+  runningPodPhase: c.series('kube_pod_status_phase', podLbls {
+    phase: 'Running',
   }, '1x10'),
   // Requests
-  runningPodMemoryRequests: c.series('kube_pod_container_resource_requests', commonLabels {
-    namespace: 'testproject',
-    pod: 'running-pod',
+  runningPodMemoryRequests: c.series('kube_pod_container_resource_requests', podLbls {
     resource: 'memory',
     node: 'flex-x666',
-    uid: runningUID,
   }, '1x10'),
-  runningPodCPURequests: c.series('kube_pod_container_resource_requests', commonLabels {
-    namespace: 'testproject',
-    pod: 'running-pod',
-    node: 'flex-x666',
+  runningPodCPURequests: c.series('kube_pod_container_resource_requests', podLbls {
     resource: 'cpu',
-    uid: runningUID,
+    node: 'flex-x666',
   }, '0x10'),
   // Real usage
-  runningPodMemoryUsage: c.series('container_memory_working_set_bytes', commonLabels {
+  runningPodMemoryUsage: c.series('container_memory_working_set_bytes', podLbls {
     image: 'busybox',
-    namespace: 'testproject',
-    pod: 'running-pod',
     node: 'flex-x666',
-    uid: runningUID,
   }, '1x10'),
 };
 
