@@ -130,18 +130,18 @@ local cloudscaleFairUseRatio = 4294967296;
            }),
     c.test('unrelated kube node label changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
-             flexNodeLabel: c.series('kube_node_labels', commonLabels {
-               label_csi_driver_id: 'A09B8DDE-5435-4D74-923C-4866513E8F02',
-               label_appuio_io_node_class: 'flex',
-               label_kubernetes_io_hostname: 'flex-x666',
-               node: 'flex-x666',
-             }, '1x10 _x10 stale'),
-             flexNodeLabelUpdated: c.series('kube_node_labels', commonLabels {
-               label_csi_driver_id: '18539CC3-0B6C-4E72-82BD-90A9BEF7D807',
-               label_appuio_io_node_class: 'flex',
-               label_kubernetes_io_hostname: 'flex-x666',
-               node: 'flex-x666',
-             }, '_x5 1x15'),
+             flexNodeLabel+: {
+               _labels+:: {
+                 label_csi_driver_id: 'A09B8DDE-5435-4D74-923C-4866513E8F02',
+               },
+               values: '1x10 _x10 stale',
+             },
+             flexNodeLabelUpdated: self.flexNodeLabel {
+               _labels+:: {
+                 label_csi_driver_id: '18539CC3-0B6C-4E72-82BD-90A9BEF7D807',
+               },
+               values: '_x5 1x15',
+             },
            },
            query,
            {
@@ -150,17 +150,15 @@ local cloudscaleFairUseRatio = 4294967296;
            }),
     c.test('unrelated kube node label adds do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
-             flexNodeLabel: c.series('kube_node_labels', commonLabels {
-               label_appuio_io_node_class: 'flex',
-               label_kubernetes_io_hostname: 'flex-x666',
-               node: 'flex-x666',
-             }, '1x10 _x10 stale'),
-             flexNodeLabelUpdated: c.series('kube_node_labels', commonLabels {
-               label_csi_driver_id: '18539CC3-0B6C-4E72-82BD-90A9BEF7D807',
-               label_appuio_io_node_class: 'flex',
-               label_kubernetes_io_hostname: 'flex-x666',
-               node: 'flex-x666',
-             }, '_x5 1x15'),
+             flexNodeLabel+: {
+               values: '1x10 _x10 stale',
+             },
+             flexNodeLabelUpdated: self.flexNodeLabel {
+               _labels+:: {
+                 label_csi_driver_id: '18539CC3-0B6C-4E72-82BD-90A9BEF7D807',
+               },
+               values: '_x5 1x15',
+             },
            },
            query,
            {
@@ -169,15 +167,15 @@ local cloudscaleFairUseRatio = 4294967296;
            }),
     c.test('node class adds do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
-             flexNodeLabel: c.series('kube_node_labels', commonLabels {
-               label_kubernetes_io_hostname: 'flex-x666',
-               node: 'flex-x666',
-             }, '1x10 _x10 stale'),
-             flexNodeLabelUpdated: c.series('kube_node_labels', commonLabels {
-               label_appuio_io_node_class: 'flex',
-               label_kubernetes_io_hostname: 'flex-x666',
-               node: 'flex-x666',
-             }, '_x5 1x15'),
+             flexNodeLabel+: {
+               _labels+:: {
+                 label_appuio_io_node_class:: null,
+               },
+               values: '1x10 _x10 stale',
+             },
+             flexNodeLabelUpdated: super.flexNodeLabel {
+               values: '_x5 1x15',
+             },
            },
            query,
            [

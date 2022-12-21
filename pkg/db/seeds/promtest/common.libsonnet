@@ -2,8 +2,12 @@ local formatLabels = function(labels)
   local lf = std.join(', ', std.map(function(l) '%s="%s"' % [l, labels[l]], std.objectFields(labels)));
   '{%s}' % [lf];
 
+// returns a series object with correctly formatted labels.
+// labels can be modified post creation using `_labels`.
 local series = function(name, labels, values) {
-  series: name + formatLabels(labels),
+  _name:: name,
+  _labels:: labels,
+  series: self._name + formatLabels(self._labels),
   values: values,
 };
 
