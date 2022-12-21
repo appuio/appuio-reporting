@@ -64,6 +64,10 @@ local baseCalculatedLabels = {
   tenant_id: 'cherry-pickers-inc',
 };
 
+// Constants from the query
+local minMemoryRequestMib = 128;
+local cloudscaleFairUseRatio = 4294967296;
+
 {
   tests: [
     c.test('minimal pod',
@@ -71,8 +75,7 @@ local baseCalculatedLabels = {
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             // Minimum value is 128MiB
-             value: 128 * 10,
+             value: minMemoryRequestMib * 10,
            }),
     c.test('pod with higher memory usage',
            baseSeries {
@@ -99,26 +102,15 @@ local baseCalculatedLabels = {
     c.test('pod with CPU requests violating fair use',
            baseSeries {
              runningPodCPURequests+: {
-               values: '%sx10' % 0.5,
+               values: '1x10',
              },
            },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
              // See per cluster fair use ratio in query
-             value: 2.048E+04,
-           }),
-    c.test('pod with CPU requests violating fair use',
-           baseSeries {
-             runningPodCPURequests+: {
-               values: '%sx10' % 0.5,
-             },
-           },
-           query,
-           {
-             labels: c.formatLabels(baseCalculatedLabels),
-             // See per cluster fair use ratio in query
-             value: 2.048E+04,
+             //  value: 2.048E+04,
+             value: (cloudscaleFairUseRatio / 1024 / 1024) * 10,
            }),
     c.test('non-running pods are not counted',
            baseSeries {
@@ -142,7 +134,7 @@ local baseCalculatedLabels = {
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 128 * 10,
+             value: minMemoryRequestMib * 10,
            }),
     c.test('unrelated kube node label changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
@@ -162,7 +154,7 @@ local baseCalculatedLabels = {
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 128 * 10,
+             value: minMemoryRequestMib * 10,
            }),
     c.test('unrelated kube node label adds do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
@@ -181,7 +173,7 @@ local baseCalculatedLabels = {
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 128 * 10,
+             value: minMemoryRequestMib * 10,
            }),
     c.test('node class adds do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
@@ -197,17 +189,17 @@ local baseCalculatedLabels = {
            },
            query,
            [
-             // I'm not sure why this is 11 * 128, might have something to do with the intervals or intra minute switching
+             // I'm not sure why this is 11 * minMemoryRequestMib, might have something to do with the intervals or intra minute switching
              {
                labels: c.formatLabels(baseCalculatedLabels),
-               value: 128 * 8,
+               value: minMemoryRequestMib * 8,
              },
              {
                labels: c.formatLabels(baseCalculatedLabels {
                  label_appuio_io_node_class:: null,
                  product: 'appuio_cloud_memory:c-appuio-cloudscale-lpg-2:cherry-pickers-inc:testproject:',
                }),
-               value: 128 * 3,
+               value: minMemoryRequestMib * 3,
              },
            ]),
 
@@ -223,7 +215,7 @@ local baseCalculatedLabels = {
            subMemoryQuery,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: (128 - (1 / 1024 / 1024)) * 10,
+             value: (minMemoryRequestMib - (1 / 1024 / 1024)) * 10,
            }),
   ],
 }
