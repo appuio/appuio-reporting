@@ -38,10 +38,10 @@ func runPromtool(t *testing.T, tmp string) {
 	cmd.Stdout = &stdout
 	assert.NoError(t, cmd.Run())
 	// Not using t.Log to keep formatting sane
-	fmt.Println("STDERR")
-	fmt.Println(stderr.String())
 	fmt.Println("STDOUT")
 	fmt.Println(stdout.String())
+	fmt.Println("STDERR")
+	fmt.Println(stderr.String())
 }
 
 func renderJsonnet(t *testing.T, tFile string) string {
