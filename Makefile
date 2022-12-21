@@ -56,8 +56,9 @@ gen-golden: ensure-prometheus docker-compose-down ping-postgres ## Update golden
 	@$(COMPOSE_CMD) $(compose_args) down
 
 .PHONY: fmt
-fmt: ## Run 'go fmt' against code
+fmt: ## Run 'go fmt' and `jsonnetfmt` against code
 	go fmt ./...
+	find . \( -name '*.jsonnet' -o -name '*.libsonnet' \) -exec jsonnetfmt -i -- {} \;
 
 .PHONY: vet
 vet: ## Run 'go vet' against code

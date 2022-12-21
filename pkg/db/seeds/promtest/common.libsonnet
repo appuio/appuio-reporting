@@ -1,9 +1,9 @@
 local formatLabels = function(labels)
-  local lf = std.join(', ', std.map(function(l) '%s="%s"' % [ l, labels[l] ], std.objectFields(labels)));
-  "{%s}" % [ lf ];
+  local lf = std.join(', ', std.map(function(l) '%s="%s"' % [l, labels[l]], std.objectFields(labels)));
+  '{%s}' % [lf];
 
 local series = function(name, labels, values) {
-  series: name+formatLabels(labels),
+  series: name + formatLabels(labels),
   values: values,
 };
 
@@ -17,7 +17,7 @@ local test = function(name, series, query, samples) {
     {
       expr: query,
       eval_time: '1h',
-      exp_samples: if std.isArray(samples) then samples else [ samples ],
+      exp_samples: if std.isArray(samples) then samples else [samples],
     },
   ],
 };
