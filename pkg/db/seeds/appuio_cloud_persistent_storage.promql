@@ -26,12 +26,14 @@ sum_over_time(
             on (cluster_id,persistentvolume)
             group_left(storageclass)
             # Do not differantiate between regular and encrypted storage class versions.
-            label_replace(
-              kube_persistentvolume_info,
-              "storageclass",
-              "$1",
-              "storageclass",
-              "([^-]+)-encrypted"
+            min by (cluster_id, persistentvolume, storageclass) (
+              label_replace(
+                kube_persistentvolume_info,
+                "storageclass",
+                "$1",
+                "storageclass",
+                "([^-]+)-encrypted"
+              )
             )
             *
             # Join the namespace label to get the tenant
