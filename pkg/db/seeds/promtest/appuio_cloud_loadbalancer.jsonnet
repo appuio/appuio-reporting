@@ -1,6 +1,6 @@
 local c = import 'common.libsonnet';
 
-local query = importstr '../appuio_cloud_persistent_storage.promql';
+local query = importstr '../appuio_cloud_loadbalancer.promql';
 
 local commonLabels = {
   cluster_id: 'c-appuio-cloudscale-lpg-2',
@@ -15,18 +15,9 @@ local baseSeries = {
     label_appuio_io_organization: 'cherry-pickers-inc',
   }, '1x10'),
 
-  local pvcID = 'pvc-da01b12d-2e31-44da-8312-f91169256221',
-  pvCapacity: c.series('kube_persistentvolume_capacity_bytes', commonLabels {
-    persistentvolume: pvcID,
-  }, '1x10'),
-  pvInfo: c.series('kube_persistentvolume_info', commonLabels {
-    persistentvolume: pvcID,
-    storageclass: 'ssd',
-  }, '1x10'),
-  pvcRef: c.series('kube_persistentvolume_claim_ref', commonLabels {
-    claim_namespace: 'testproject',
-    name: 'important-database',
-    persistentvolume: pvcID,
+  pvCapacity: c.series('kube_service_spec_type', commonLabels {
+    type: 'LoadBalancer',
+    namespace: 'testproject',
   }, '1x10'),
 };
 
@@ -34,8 +25,7 @@ local baseCalculatedLabels = {
   category: 'c-appuio-cloudscale-lpg-2:testproject',
   cluster_id: 'c-appuio-cloudscale-lpg-2',
   namespace: 'testproject',
-  product: 'appuio_cloud_persistent_storage:c-appuio-cloudscale-lpg-2:cherry-pickers-inc:testproject:ssd',
-  storageclass: 'ssd',
+  product: 'appuio_cloud_loadbalancer:c-appuio-cloudscale-lpg-2:cherry-pickers-inc:testproject',
   tenant_id: 'cherry-pickers-inc',
 };
 
@@ -43,32 +33,6 @@ local baseCalculatedLabels = {
   tests: [
     c.test('minimal PVC',
            baseSeries,
-           query,
-           {
-             labels: c.formatLabels(baseCalculatedLabels),
-             value: 10,
-           }),
-    c.test('higher than 1GiB request',
-           baseSeries {
-             pvCapacity+: {
-               values: '%sx10' % (5 * 1024 * 1024 * 1024),
-             },
-           },
-           query,
-           {
-             labels: c.formatLabels(baseCalculatedLabels),
-             value: 5 * 10,
-           }),
-
-    c.test('unrelated kube_persistentvolume_info changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
-           baseSeries {
-             pvInfoUpdated: self.pvInfo {
-               _labels+:: {
-                 csi_volume_handle: '672004be-a86b-44e0-b446-1255a1f8b340',
-               },
-               values: '_x5 1x5',
-             },
-           },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
@@ -105,7 +69,6 @@ local baseCalculatedLabels = {
                // We cheat here and use an impossible value.
                // Since we use min() and bottomk() in the query this priotizes this series less than the other.
                // It's ugly but it prevents flaky tests since otherwise one of the series gets picked randomly.
-               // Does not influence the result. The result is flored to a minimum of 1GiB.
                values: '_x2 2x15',
              },
            },
@@ -118,9 +81,10 @@ local baseCalculatedLabels = {
              {
                labels: c.formatLabels(baseCalculatedLabels {
                  tenant_id: 'carrot-pickers-inc',
-                 product: 'appuio_cloud_persistent_storage:c-appuio-cloudscale-lpg-2:carrot-pickers-inc:testproject:ssd',
+                 product: 'appuio_cloud_loadbalancer:c-appuio-cloudscale-lpg-2:carrot-pickers-inc:testproject',
                }),
-               value: 2,
+               // 1 service * two samples * 2 because of the cheat above.
+               value: 1 * 2 * 2,
              },
            ]),
   ],

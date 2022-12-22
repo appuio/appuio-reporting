@@ -60,8 +60,25 @@ local baseCalculatedLabels = {
 local minMemoryRequestMib = 128;
 local cloudscaleFairUseRatio = 4294967296;
 
+local subQueryTests = [
+  c.test('sub CPU requests query sanity check',
+         baseSeries,
+         subCPUQuery,
+         {
+           labels: c.formatLabels(baseCalculatedLabels),
+           value: 0,
+         }),
+  c.test('sub memory requests query sanity check',
+         baseSeries,
+         subMemoryQuery,
+         {
+           labels: c.formatLabels(baseCalculatedLabels),
+           value: (minMemoryRequestMib - (1 / 1024 / 1024)) * 10,
+         }),
+];
+
 {
-  tests: [
+  tests: subQueryTests + [
     c.test('minimal pod',
            baseSeries,
            query,
@@ -193,19 +210,54 @@ local cloudscaleFairUseRatio = 4294967296;
              },
            ]),
 
-    c.test('sub CPU requests query sanity check',
-           baseSeries,
-           subCPUQuery,
+    c.test('unrelated kube_namespace_labels changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
+           baseSeries {
+             testprojectNamespaceOrgLabel+: {
+               values: '1x10 _x10 stale',
+             },
+             testprojectNamespaceOrgLabelUpdated: self.testprojectNamespaceOrgLabel {
+               _labels+:: {
+                 custom_appuio_io_myid: '672004be-a86b-44e0-b446-1255a1f8b340',
+               },
+               values: '_x5 1x15',
+             },
+           },
+           query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 0,
+             value: 128 * 10,
            }),
-    c.test('sub memory requests query sanity check',
-           baseSeries,
-           subMemoryQuery,
-           {
-             labels: c.formatLabels(baseCalculatedLabels),
-             value: (minMemoryRequestMib - (1 / 1024 / 1024)) * 10,
-           }),
+
+    c.test('organization changes do not throw many-to-many errors - there is an overlap since series go stale only after a few missed scrapes',
+           baseSeries {
+             testprojectNamespaceOrgLabel+: {
+               values: '1x7 _x10 stale',
+             },
+             testprojectNamespaceOrgLabelUpdated: self.testprojectNamespaceOrgLabel {
+               _labels+:: {
+                 label_appuio_io_organization: 'carrot-pickers-inc',
+               },
+               // We cheat here and use an impossible value.
+               // Since we use min() and bottomk() in the query this priotizes this series less than the other.
+               // It's ugly but it prevents flaky tests since otherwise one of the series gets picked randomly.
+               // Does not influence the result. The result is flored to a minimum of 128MiB.
+               values: '_x2 2x15',
+             },
+           },
+           query,
+           [
+             {
+               labels: c.formatLabels(baseCalculatedLabels),
+               // Same as above it's 11*128 other queries don't have this problem
+               value: 128 * 9,
+             },
+             {
+               labels: c.formatLabels(baseCalculatedLabels {
+                 tenant_id: 'carrot-pickers-inc',
+                 product: 'appuio_cloud_memory:c-appuio-cloudscale-lpg-2:carrot-pickers-inc:testproject:flex',
+               }),
+               value: 128 * 2,
+             },
+           ]),
   ],
 }
