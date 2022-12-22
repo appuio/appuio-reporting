@@ -16,11 +16,11 @@ local baseSeries = {
     label_appuio_io_node_class: 'flex',
     label_kubernetes_io_hostname: 'flex-x666',
     node: 'flex-x666',
-  }, '1x10'),
+  }, '1x120'),
   testprojectNamespaceOrgLabel: c.series('kube_namespace_labels', commonLabels {
     namespace: 'testproject',
     label_appuio_io_organization: 'cherry-pickers-inc',
-  }, '1x10'),
+  }, '1x120'),
 
   local podLbls = commonLabels {
     namespace: 'testproject',
@@ -30,21 +30,21 @@ local baseSeries = {
   // Phases
   runningPodPhase: c.series('kube_pod_status_phase', podLbls {
     phase: 'Running',
-  }, '1x10'),
+  }, '1x120'),
   // Requests
   runningPodMemoryRequests: c.series('kube_pod_container_resource_requests', podLbls {
     resource: 'memory',
     node: 'flex-x666',
-  }, '1x10'),
+  }, '1x120'),
   runningPodCPURequests: c.series('kube_pod_container_resource_requests', podLbls {
     resource: 'cpu',
     node: 'flex-x666',
-  }, '0x10'),
+  }, '0x120'),
   // Real usage
   runningPodMemoryUsage: c.series('container_memory_working_set_bytes', podLbls {
     image: 'busybox',
     node: 'flex-x666',
-  }, '1x10'),
+  }, '1x120'),
 };
 
 local baseCalculatedLabels = {
@@ -73,7 +73,7 @@ local subQueryTests = [
          subMemoryQuery,
          {
            labels: c.formatLabels(baseCalculatedLabels),
-           value: (minMemoryRequestMib - (1 / 1024 / 1024)) * 10,
+           value: (minMemoryRequestMib - (1 / 1024 / 1024)) * 60,
          }),
 ];
 
@@ -84,34 +84,34 @@ local subQueryTests = [
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: minMemoryRequestMib * 10,
+             value: minMemoryRequestMib * 60,
            }),
     c.test('pod with higher memory usage',
            baseSeries {
              runningPodMemoryUsage+: {
-               values: '%sx10' % (500 * 1024 * 1024),
+               values: '%sx120' % (500 * 1024 * 1024),
              },
            },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 500 * 10,
+             value: 500 * 60,
            }),
     c.test('pod with higher memory requests',
            baseSeries {
              runningPodMemoryRequests+: {
-               values: '%sx10' % (500 * 1024 * 1024),
+               values: '%sx120' % (500 * 1024 * 1024),
              },
            },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 500 * 10,
+             value: 500 * 60,
            }),
     c.test('pod with CPU requests violating fair use',
            baseSeries {
              runningPodCPURequests+: {
-               values: '1x10',
+               values: '1x120',
              },
            },
            query,
@@ -119,7 +119,7 @@ local subQueryTests = [
              labels: c.formatLabels(baseCalculatedLabels),
              // See per cluster fair use ratio in query
              //  value: 2.048E+04,
-             value: (cloudscaleFairUseRatio / 1024 / 1024) * 10,
+             value: (cloudscaleFairUseRatio / 1024 / 1024) * 60,
            }),
     c.test('non-running pods are not counted',
            baseSeries {
@@ -130,57 +130,34 @@ local subQueryTests = [
              },
              succeededPodPhase: c.series('kube_pod_status_phase', lbls {
                phase: 'Succeeded',
-             }, '1x10'),
+             }, '1x120'),
              succeededPodMemoryRequests: c.series('kube_pod_container_resource_requests', lbls {
                resource: 'memory',
                node: 'flex-x666',
-             }, '1x10'),
+             }, '1x120'),
              succeededPodCPURequests: c.series('kube_pod_container_resource_requests', lbls {
                node: 'flex-x666',
                resource: 'cpu',
-             }, '1x10'),
+             }, '1x120'),
            },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: minMemoryRequestMib * 10,
+             value: minMemoryRequestMib * 60,
            }),
-    c.test('unrelated kube node label changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
+    c.test('unrelated kube_node_labels changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
-             flexNodeLabel+: {
-               _labels+:: {
-                 label_csi_driver_id: 'A09B8DDE-5435-4D74-923C-4866513E8F02',
-               },
-               values: '1x10 _x10 stale',
-             },
              flexNodeLabelUpdated: self.flexNodeLabel {
                _labels+:: {
                  label_csi_driver_id: '18539CC3-0B6C-4E72-82BD-90A9BEF7D807',
                },
-               values: '_x5 1x15',
+               values: '_x30 1x30 _x60',
              },
            },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: minMemoryRequestMib * 10,
-           }),
-    c.test('unrelated kube node label adds do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
-           baseSeries {
-             flexNodeLabel+: {
-               values: '1x10 _x10 stale',
-             },
-             flexNodeLabelUpdated: self.flexNodeLabel {
-               _labels+:: {
-                 label_csi_driver_id: '18539CC3-0B6C-4E72-82BD-90A9BEF7D807',
-               },
-               values: '_x5 1x15',
-             },
-           },
-           query,
-           {
-             labels: c.formatLabels(baseCalculatedLabels),
-             value: minMemoryRequestMib * 10,
+             value: minMemoryRequestMib * 60,
            }),
     c.test('node class adds do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
@@ -188,76 +165,76 @@ local subQueryTests = [
                _labels+:: {
                  label_appuio_io_node_class:: null,
                },
-               values: '1x10 _x10 stale',
+               values: '1x60',
              },
              flexNodeLabelUpdated: super.flexNodeLabel {
-               values: '_x5 1x15',
+               values: '_x30 1x90',
              },
            },
            query,
            [
-             // I'm not sure why this is 11 * minMemoryRequestMib, might have something to do with the intervals or intra minute switching
+             // I'm not sure why this is 61min * minMemoryRequestMib. Other queries always result in 60min
+             // TODO investigate where the extra min comes from
              {
                labels: c.formatLabels(baseCalculatedLabels),
-               value: minMemoryRequestMib * 8,
+               value: minMemoryRequestMib * 46,
              },
              {
                labels: c.formatLabels(baseCalculatedLabels {
                  label_appuio_io_node_class:: null,
                  product: 'appuio_cloud_memory:c-appuio-cloudscale-lpg-2:cherry-pickers-inc:testproject:',
                }),
-               value: minMemoryRequestMib * 3,
+               value: minMemoryRequestMib * 15,
              },
            ]),
 
     c.test('unrelated kube_namespace_labels changes do not throw errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
-             testprojectNamespaceOrgLabel+: {
-               values: '1x10 _x10 stale',
-             },
              testprojectNamespaceOrgLabelUpdated: self.testprojectNamespaceOrgLabel {
                _labels+:: {
                  custom_appuio_io_myid: '672004be-a86b-44e0-b446-1255a1f8b340',
                },
-               values: '_x5 1x15',
+               values: '_x30 1x30 _x60',
              },
            },
            query,
            {
              labels: c.formatLabels(baseCalculatedLabels),
-             value: 128 * 10,
+             value: minMemoryRequestMib * 60,
            }),
 
     c.test('organization changes do not throw many-to-many errors - there is an overlap since series go stale only after a few missed scrapes',
            baseSeries {
              testprojectNamespaceOrgLabel+: {
-               values: '1x7 _x10 stale',
+               // We cheat here and use an impossible value.
+               // Since we use min() and bottomk() in the query this priotizes this series less than the other.
+               // It's ugly but it prevents flaky tests since otherwise one of the series gets picked randomly.
+               // Does not influence the result. The result is floored to a minimum of 128MiB.
+               values: '2x120',
              },
              testprojectNamespaceOrgLabelUpdated: self.testprojectNamespaceOrgLabel {
                _labels+:: {
                  label_appuio_io_organization: 'carrot-pickers-inc',
                },
-               // We cheat here and use an impossible value.
-               // Since we use min() and bottomk() in the query this priotizes this series less than the other.
-               // It's ugly but it prevents flaky tests since otherwise one of the series gets picked randomly.
-               // Does not influence the result. The result is flored to a minimum of 128MiB.
-               values: '_x2 2x15',
+               values: '_x60 1x60',
              },
            },
            query,
            [
+             // I'm not sure why this is 61min * minMemoryRequestMib. Other queries always result in 60min
+             // TODO investigate where the extra min comes from
              {
                labels: c.formatLabels(baseCalculatedLabels),
-               // Same as above it's 11*128 other queries don't have this problem
-               value: 128 * 9,
+               value: minMemoryRequestMib * 30,
              },
              {
                labels: c.formatLabels(baseCalculatedLabels {
                  tenant_id: 'carrot-pickers-inc',
                  product: 'appuio_cloud_memory:c-appuio-cloudscale-lpg-2:carrot-pickers-inc:testproject:flex',
                }),
-               value: 128 * 2,
+               value: minMemoryRequestMib * 31,
              },
            ]),
+
   ],
 }
