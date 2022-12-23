@@ -28,11 +28,17 @@ sum_over_time(
           # Join namespace label `label_appuio_io_organization` as `tenant_id`.
           on(cluster_id, namespace)
           group_left(tenant_id)
-          label_replace(
-            kube_namespace_labels{label_appuio_io_organization=~".+"},
-            "tenant_id",
-            "$1",
-            "label_appuio_io_organization", "(.*)"
+          (
+            bottomk(1,
+              min by (cluster_id, namespace, tenant_id) (
+                label_replace(
+                  kube_namespace_labels{label_appuio_io_organization=~".+"},
+                  "tenant_id",
+                  "$1",
+                  "label_appuio_io_organization", "(.*)"
+                )
+              )
+            ) by(cluster_id, namespace)
           ),
           "product",
           "appuio_cloud_memory",
