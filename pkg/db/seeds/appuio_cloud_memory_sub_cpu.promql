@@ -3,7 +3,7 @@
 # Sum values over one hour.
 sum_over_time(
   # Average over a one-minute time frame.
-  # NOTE: This is a sliding window. Results vary based on the queries' execution time.
+  # NOTE: This is a sliding window. Results vary based on the queries execution time.
   avg_over_time(
     # Add the final product label by joining the base product with the cluster ID, the tenant and the namespace.
     label_join(
