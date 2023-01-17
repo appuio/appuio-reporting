@@ -24,6 +24,9 @@ var appuioCloudLoadbalancerQuery string
 //go:embed seeds/appuio_cloud_persistent_storage.promql
 var appuioCloudPersistentStorageQuery string
 
+//go:embed seeds/appcat_postgresql_vshn_standalone.promql
+var appcatPostgresqlVSHNStandalone string
+
 // DefaultQueries consists of default starter queries.
 var DefaultQueries = []Query{
 	{
@@ -56,6 +59,12 @@ var DefaultQueries = []Query{
 		Description: "Persistent storage usage aggregated by namespace and storageclass",
 		Query:       appuioCloudPersistentStorageQuery,
 		Unit:        "GiB",
+	},
+	{
+		Name:        "appcat_postgresql_vshn_standalone",
+		Description: "Number of VSHN managed standalone postgres instances",
+		Query:       appcatPostgresqlVSHNStandalone,
+		Unit:        "Instances",
 	},
 }
 
