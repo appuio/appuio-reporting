@@ -53,6 +53,53 @@ func TestPartialResponseRoundTripper_X(t *testing.T) {
 	}
 }
 
+func TestAdditionalHeadersResponseRoundTripper_X(t *testing.T) {
+	testCases := []struct {
+		url     string
+		headers map[string][]string
+	}{
+		{
+			url: "https://thanos.io",
+			headers: map[string][]string{
+				"X-Test-Header": []string{"foobar"},
+			},
+		},
+		{
+			url:     "https://thanos.io?testly=blub",
+			headers: map[string][]string{},
+		},
+		{
+			url: "https://thanos.io",
+			headers: map[string][]string{
+				"X-Test-One": []string{"one"},
+				"X-Test-Two": []string{"two"},
+			},
+		},
+		{
+			url: "https://thanos.io?testly=blub",
+			headers: map[string][]string{
+				"X-Test-One": []string{"one", "two", "three"},
+				"X-Test-Two": []string{"two"},
+			},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(fmt.Sprintf("headers %v, url %s", tC.headers, tC.url), func(t *testing.T) {
+			rt := AdditionalHeadersRoundTripper{
+				RoundTripper: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+					for k, s := range tC.headers {
+						require.Equal(t, r.Header.Values(k), s)
+					}
+					return nil, errors.New("not implemented")
+				}),
+				Headers: tC.headers,
+			}
+
+			_, _ = rt.RoundTrip(httptest.NewRequest("GET", tC.url, nil))
+		})
+	}
+}
+
 type roundTripFunc func(r *http.Request) (*http.Response, error)
 
 func (s roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
