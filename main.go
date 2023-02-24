@@ -69,6 +69,7 @@ func newApp() (context.Context, context.CancelFunc, *cli.App) {
 			newReportCommand(),
 			newCheckMissingCommand(),
 			newInvoiceCommand(),
+			newTmapCommand(),
 		},
 		ExitErrHandler: func(context *cli.Context, err error) {
 			if err == nil {

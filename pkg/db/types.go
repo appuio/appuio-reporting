@@ -36,6 +36,8 @@ type Tenant struct {
 	// Source is the tenant string read from the 'appuio.io/organization' label.
 	Source string
 	Target sql.NullString
+
+	During pgtype.Tstzrange
 }
 
 type Category struct {
