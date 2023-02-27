@@ -19,9 +19,12 @@ type AdditionalHeadersRoundTripper struct {
 
 // RoundTrip implements the RoundTripper interface.
 func (t *PartialResponseRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	q := req.URL.Query()
+	r2 := new(http.Request)
+	*r2 = *req
+	q := r2.URL.Query()
 	q.Set("partial_response", strconv.FormatBool(t.Allow))
-	req.URL.RawQuery = q.Encode()
+	r2.URL.RawQuery = q.Encode()
+	req = r2
 	return t.RoundTripper.RoundTrip(req)
 }
 
