@@ -11,7 +11,7 @@ type PartialResponseRoundTripper struct {
 	Allow bool
 }
 
-// adds a new RoundTripper to the chain that sets the partial_response query parameter to the value of Allow.
+// AdditionalHeadersRoundTripper adds a new RoundTripper to the chain that sets additional static headers.
 type AdditionalHeadersRoundTripper struct {
 	http.RoundTripper
 	Headers map[string][]string
