@@ -19,8 +19,6 @@ import (
 	apiv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 )
 
-const pgTimestampFormat = "2006-01-02 15:04:05-07"
-
 type MappingSuite struct {
 	testsuite.Suite
 }
@@ -74,17 +72,17 @@ func (s *MappingSuite) TestReport_RunReportRemapsExistingTenants() {
 		{
 			Source: "bar-org",
 			Target: "666",
-			During: fmt.Sprintf("[\"%s\",infinity)", ts.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[\"%s\",infinity)", ts.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 		{
 			Source: "foo-org",
 			Target: "555",
-			During: fmt.Sprintf("[\"%s\",infinity)", ts.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[\"%s\",infinity)", ts.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 		{
 			Source: "foo-org",
 			Target: "be-other",
-			During: fmt.Sprintf("[-infinity,\"%s\")", ts.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[-infinity,\"%s\")", ts.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 	}
 	var tenants []comparableTenant
@@ -142,22 +140,22 @@ func (s *MappingSuite) TestReport_RunReport_NewUpperBoundInfinityOrUntilNextRang
 		{
 			Source: "bar-org",
 			Target: "666",
-			During: fmt.Sprintf("[\"%s\",infinity)", ts.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[\"%s\",infinity)", ts.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 		{
 			Source: "bar-org",
 			Target: "be-other",
-			During: fmt.Sprintf("[-infinity,\"%s\")", pastTS.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[-infinity,\"%s\")", pastTS.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 		{
 			Source: "foo-org",
 			Target: "555",
-			During: fmt.Sprintf("[\"%s\",\"%s\")", ts.In(time.UTC).Format(pgTimestampFormat), futureTS.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[\"%s\",\"%s\")", ts.In(time.UTC).Format(db.PGTimestampFormat), futureTS.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 		{
 			Source: "foo-org",
 			Target: "be-other",
-			During: fmt.Sprintf("[\"%s\",infinity)", futureTS.In(time.UTC).Format(pgTimestampFormat)),
+			During: fmt.Sprintf("[\"%s\",infinity)", futureTS.In(time.UTC).Format(db.PGTimestampFormat)),
 		},
 	}
 	var tenants []comparableTenant

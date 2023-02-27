@@ -8,6 +8,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// PGTimestampFormat is the string representation of PostgreSQL's `timestamptz`.
+const PGTimestampFormat = "2006-01-02 15:04:05-07"
+
 // NamedPreparer is an interface used by GetNamed.
 type NamedPreparer interface {
 	PrepareNamed(query string) (*sqlx.NamedStmt, error)
