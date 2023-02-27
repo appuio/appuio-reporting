@@ -24,6 +24,7 @@ type reportCommand struct {
 	PromQueryTimeout time.Duration
 
 	ThanosAllowPartialResponses bool
+	OrgId                       string
 }
 
 var reportCommandName = "report"
@@ -48,6 +49,8 @@ func newReportCommand() *cli.Command {
 				EnvVars: envVars("PROM_QUERY_TIMEOUT"), Destination: &command.PromQueryTimeout, Required: false},
 			&cli.BoolFlag{Name: "thanos-allow-partial-responses", Usage: "Allows partial responses from Thanos. Can be helpful when querying a Thanos cluster with lost data.",
 				EnvVars: envVars("THANOS_ALLOW_PARTIAL_RESPONSES"), Destination: &command.ThanosAllowPartialResponses, Required: false, DefaultText: "false"},
+			&cli.StringFlag{Name: "org-id", Usage: "Sets the X-Scope-OrgID header to this value on requests to Prometheus", Value: "",
+				EnvVars: envVars("ORG_ID"), Destination: &command.OrgId, Required: false, DefaultText: "empty"},
 		},
 	}
 }
@@ -62,7 +65,7 @@ func (cmd *reportCommand) execute(cliCtx *cli.Context) error {
 	ctx := cliCtx.Context
 	log := AppLogger(ctx).WithName(reportCommandName)
 
-	promClient, err := newPrometheusAPIClient(cmd.PrometheusURL, cmd.ThanosAllowPartialResponses)
+	promClient, err := newPrometheusAPIClient(cmd.PrometheusURL, cmd.ThanosAllowPartialResponses, cmd.OrgId)
 	if err != nil {
 		return fmt.Errorf("could not create prometheus client: %w", err)
 	}
@@ -128,13 +131,26 @@ func (cmd *reportCommand) runReport(ctx context.Context, db *sqlx.DB, promClient
 	return tx.Commit()
 }
 
-func newPrometheusAPIClient(promURL string, thanosAllowPartialResponses bool) (apiv1.API, error) {
+func newPrometheusAPIClient(promURL string, thanosAllowPartialResponses bool, orgId string) (apiv1.API, error) {
+	rt := api.DefaultRoundTripper
+	rt = &thanos.PartialResponseRoundTripper{
+		RoundTripper: rt,
+		Allow:        thanosAllowPartialResponses,
+	}
+
+	if orgId != "" {
+		rt = &thanos.AdditionalHeadersRoundTripper{
+			RoundTripper: rt,
+			Headers: map[string][]string{
+				"X-Scope-OrgID": []string{orgId},
+			},
+		}
+	}
+
 	client, err := api.NewClient(api.Config{
-		Address: promURL,
-		RoundTripper: &thanos.PartialResponseRoundTripper{
-			RoundTripper: api.DefaultRoundTripper,
-			Allow:        thanosAllowPartialResponses,
-		},
+		Address:      promURL,
+		RoundTripper: rt,
 	})
+
 	return apiv1.NewAPI(client), err
 }

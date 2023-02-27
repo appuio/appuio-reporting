@@ -25,6 +25,7 @@ type tmapCommand struct {
 	AdditionalMetricSelector string
 
 	ThanosAllowPartialResponses bool
+	OrgId                       string
 }
 
 var tenantmappingCommandName = "tenantmapping"
@@ -51,6 +52,8 @@ func newTmapCommand() *cli.Command {
 				EnvVars: envVars("DRY_RUN"), Destination: &command.DryRun, Required: false, DefaultText: "false"},
 			&cli.StringFlag{Name: "additional-metric-selector", Usage: "Allows further specifying which metrics to choose. Example: --additional-metric-selector='namespace=\"testing\"'",
 				EnvVars: envVars("ADDITIONAL_METRIC_SELECTOR"), Destination: &command.AdditionalMetricSelector, Required: false, DefaultText: "false"},
+			&cli.StringFlag{Name: "org-id", Usage: "Sets the X-Scope-OrgID header to this value on requests to Prometheus", Value: "",
+				EnvVars: envVars("ORG_ID"), Destination: &command.OrgId, Required: false, DefaultText: "empty"},
 		},
 	}
 }
@@ -67,7 +70,7 @@ func (cmd *tmapCommand) execute(cliCtx *cli.Context) error {
 	// We really need to fix the inane dance around the AppLogger which needs custom plumbing and can't be used from packages because of import cycles.
 	ctx = logr.NewContext(ctx, log)
 
-	promClient, err := newPrometheusAPIClient(cmd.PrometheusURL, cmd.ThanosAllowPartialResponses)
+	promClient, err := newPrometheusAPIClient(cmd.PrometheusURL, cmd.ThanosAllowPartialResponses, cmd.OrgId)
 	if err != nil {
 		return fmt.Errorf("could not create prometheus client: %w", err)
 	}
