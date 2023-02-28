@@ -56,17 +56,32 @@ func (cmd *checkMissingCommand) execute(cliCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
-	if len(missing) == 0 {
-		return nil
+	inconsistent, err := check.Inconsistent(ctx, tx)
+	if err != nil {
+		return err
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	defer w.Flush()
-	fmt.Fprint(w, "Table\tMissing Field\tID\tSource\n")
-	for _, m := range missing {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", m.Table, m.MissingField, m.ID, m.Source)
+	if len(missing) != 0 {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		defer w.Flush()
+		fmt.Fprint(w, "Table\tMissing Field\tID\tSource\n")
+		for _, m := range missing {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", m.Table, m.MissingField, m.ID, m.Source)
+		}
 	}
 
-	return cli.Exit(fmt.Sprintf("%d missing entries found.", len(missing)), 1)
+	if len(inconsistent) != 0 {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		defer w.Flush()
+		fmt.Fprint(w, "Table\tDimension ID\tFact Time\tDimension Time Range\n")
+		for _, i := range inconsistent {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", i.Table, i.DimensionID, i.FactTime, i.DimensionRange)
+		}
+	}
+
+	if len(missing) == 0 && len(inconsistent) == 0 {
+		return cli.Exit("No missing or inconsistent data found.", 0)
+	}
+
+	return cli.Exit(fmt.Sprintf("%d missing, %d inconsistent entries found.", len(missing), len(inconsistent)), 1)
 }
