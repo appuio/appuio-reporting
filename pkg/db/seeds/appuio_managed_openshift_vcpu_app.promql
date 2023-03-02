@@ -1,0 +1,36 @@
+# Calculates vCPUs for app nodes of a cluster
+# Structure of resulting product label "query:cluster:tenant::class"
+
+# Max values over one hour.
+max_over_time(
+  # Add the final product label by joining the base product with the cluster ID, the tenant, and the service class.
+  label_join(
+    label_replace(
+    # Add the base product identifier.
+      label_replace(
+          sum by(cluster_id, vshn_service_level, tenant_id) (
+              sum by (tenant_id, cluster_id, instance, vshn_service_level) (
+                  min without(prometheus_replica) (node_cpu_info)
+              ) * on (tenant_id, cluster_id, instance, vshn_service_level)
+                  label_join(
+                      (group without(prometheus_replica) (kube_node_role{role="app"})), "instance", "", "node")
+          ),
+          "product",
+          "appuio_managed_openshift_vcpu_app",
+          "product",
+          ".*"
+      ),
+      "class",
+      "$1",
+      "vshn_service_level",
+      "(.*)"
+    ),
+    "product",
+    ":",
+    "product",
+    "cluster_id",
+    "tenant_id",
+    "empty", # empty namespace
+    "class"
+  )[59m:1m]
+)

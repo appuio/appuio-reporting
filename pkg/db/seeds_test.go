@@ -22,7 +22,7 @@ func (s *SeedsTestSuite) TestSeedDefaultQueries() {
 	_, err := d.Exec("DELETE FROM queries")
 	require.NoError(t, err)
 
-	expQueryNum := 6
+	expQueryNum := 7
 
 	count := "SELECT COUNT(*) FROM queries"
 	requireQueryEqual(t, d, 0, count)
