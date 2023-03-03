@@ -1,0 +1,134 @@
+[
+	{
+		"Tenant": {
+			"Source": "megacorp",
+			"Target": "83492"
+		},
+		"PeriodStart": "2022-01-01T00:00:00Z",
+		"PeriodEnd": "2022-01-31T00:00:00Z",
+		"Categories": [
+			{
+				"Source": "my-cluster:my-namespace",
+				"Target": "",
+				"Items": [
+					{
+						"Description": "test description",
+						"QueryName": "test",
+						"Source": "my-product",
+						"Target": "",
+						"Quantity": 29232,
+						"QuantityMin": 42,
+						"QuantityAvg": 42,
+						"QuantityMax": 42,
+						"Unit": "tps",
+						"PricePerUnit": 1,
+						"Discount": 0,
+						"Total": 29232,
+						"SubItems": {}
+					}
+				],
+				"Total": 29232
+			}
+		],
+		"Total": 29232
+	},
+	{
+		"Tenant": {
+			"Source": "tricell",
+			"Target": "98757"
+		},
+		"PeriodStart": "2022-01-01T00:00:00Z",
+		"PeriodEnd": "2022-01-31T00:00:00Z",
+		"Categories": [
+			{
+				"Source": "my-cluster:my-namespace",
+				"Target": "",
+				"Items": [
+					{
+						"Description": "test description",
+						"QueryName": "test",
+						"Source": "my-product",
+						"Target": "",
+						"Quantity": 19152,
+						"QuantityMin": 42,
+						"QuantityAvg": 42,
+						"QuantityMax": 42,
+						"Unit": "tps",
+						"PricePerUnit": 1,
+						"Discount": 0,
+						"Total": 19152,
+						"SubItems": {}
+					}
+				],
+				"Total": 19152
+			}
+		],
+		"Total": 19152
+	},
+	{
+		"Tenant": {
+			"Source": "tricell",
+			"Target": "98942"
+		},
+		"PeriodStart": "2022-01-01T00:00:00Z",
+		"PeriodEnd": "2022-01-31T00:00:00Z",
+		"Categories": [
+			{
+				"Source": "my-cluster:my-namespace",
+				"Target": "",
+				"Items": [
+					{
+						"Description": "test description",
+						"QueryName": "test",
+						"Source": "my-product",
+						"Target": "",
+						"Quantity": 10080,
+						"QuantityMin": 42,
+						"QuantityAvg": 42,
+						"QuantityMax": 42,
+						"Unit": "tps",
+						"PricePerUnit": 1,
+						"Discount": 0,
+						"Total": 10080,
+						"SubItems": {}
+					}
+				],
+				"Total": 10080
+			}
+		],
+		"Total": 10080
+	},
+	{
+		"Tenant": {
+			"Source": "umbrellacorp",
+			"Target": "96432"
+		},
+		"PeriodStart": "2022-01-01T00:00:00Z",
+		"PeriodEnd": "2022-01-31T00:00:00Z",
+		"Categories": [
+			{
+				"Source": "my-cluster:my-namespace",
+				"Target": "",
+				"Items": [
+					{
+						"Description": "test description",
+						"QueryName": "test",
+						"Source": "my-product",
+						"Target": "",
+						"Quantity": 9744,
+						"QuantityMin": 14,
+						"QuantityAvg": 14,
+						"QuantityMax": 14,
+						"Unit": "tps",
+						"PricePerUnit": 1,
+						"Discount": 0,
+						"Total": 9744,
+						"SubItems": {}
+					}
+				],
+				"Total": 9744
+			}
+		],
+		"Total": 9744
+	}
+]

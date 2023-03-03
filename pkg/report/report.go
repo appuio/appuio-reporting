@@ -116,8 +116,11 @@ func processSample(ctx context.Context, tx *sqlx.Tx, ts time.Time, query db.Quer
 	}
 
 	var upsertedTenant db.Tenant
-	if upsertTenant(ctx, tx, &upsertedTenant, db.Tenant{Source: skey.Tenant}); err != nil {
-		return err
+	err = upsertTenant(ctx, tx, &upsertedTenant, db.Tenant{
+		Source: skey.Tenant,
+	}, ts)
+	if err != nil {
+		return fmt.Errorf("failed to upsert tenant '%s': %w", skey.Tenant, err)
 	}
 
 	var upsertedCategory db.Category
@@ -215,19 +218,18 @@ func upsertCategory(ctx context.Context, tx *sqlx.Tx, dst *db.Category, src db.C
 	return nil
 }
 
-func upsertTenant(ctx context.Context, tx *sqlx.Tx, dst *db.Tenant, src db.Tenant) error {
-	err := db.GetNamedContext(ctx, tx, dst,
+func upsertTenant(ctx context.Context, tx *sqlx.Tx, dst *db.Tenant, src db.Tenant, ts time.Time) error {
+	err := sqlx.GetContext(ctx, tx, dst,
 		`WITH
 				existing AS (
-					SELECT * FROM tenants WHERE source = :source
+					SELECT * FROM tenants WHERE source = $1 AND during @> $2::timestamptz
 				),
 				inserted AS (
 					INSERT INTO tenants (source)
-					SELECT :source WHERE NOT EXISTS (SELECT 1 FROM existing)
+					SELECT $1 WHERE NOT EXISTS (SELECT 1 FROM existing)
 					RETURNING *
 				)
-			SELECT * FROM inserted UNION ALL SELECT * FROM existing`,
-		src)
+			SELECT * FROM inserted UNION ALL SELECT * FROM existing`, src.Source, ts)
 	if err != nil {
 		return fmt.Errorf("failed to upsert tenant %+v: %w", src, err)
 	}

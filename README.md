@@ -114,6 +114,9 @@ createdb --username=reporting -h localhost -p 5432 appuio-cloud-reporting-test
 
 export ACR_DB_URL="postgres://reporting:reporting@localhost/appuio-cloud-reporting-test?sslmode=disable"
 
+# Required for tests
+make ensure-prometheus
+
 go run . migrate
 go run . migrate --seed
 go test ./...
@@ -126,7 +129,7 @@ psql -U reporting -W -h localhost appuio-cloud-reporting-test
 
 To enable IDE Test/Debug support, `ACR_DB_URL` should be added to the test environment.
 
-#### VSCode
+#### VS Code
 
 ```sh
 mkdir -p .vscode

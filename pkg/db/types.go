@@ -83,6 +83,14 @@ func (c Category) ForeignKeyName() string {
 	return "category_id"
 }
 
+// CreateTenant creates the given tenant
+func CreateTenant(p NamedPreparer, in Tenant) (Tenant, error) {
+	var tenant Tenant
+	err := GetNamed(p, &tenant,
+		"INSERT INTO tenants (source,target,during) VALUES (:source,:target,:during) RETURNING *", in)
+	return tenant, err
+}
+
 var _ Model = Product{}
 
 type Product struct {
