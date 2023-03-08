@@ -24,11 +24,8 @@ var appuioCloudLoadbalancerQuery string
 //go:embed seeds/appuio_cloud_persistent_storage.promql
 var appuioCloudPersistentStorageQuery string
 
-//go:embed seeds/appuio_managed_openshift_vcpu_app.promql
-var appuioManagedOpenShiftvCPUAppQuery string
-
-//go:embed seeds/appuio_managed_openshift_vcpu_storage.promql
-var appuioManagedOpenShiftvCPUStorageQuery string
+//go:embed seeds/appuio_managed_openshift_vcpu.promql
+var appuioManagedOpenShiftvCPUQuery string
 
 //go:embed seeds/appcat_postgresql_vshn_standalone.promql
 var appcatPostgresqlVSHNStandalone string
@@ -67,15 +64,9 @@ var DefaultQueries = []Query{
 		Unit:        "GiB",
 	},
 	{
-		Name:        "appuio_managed_openshift_vcpu_app",
-		Description: "vCPU aggregated by cluster and service level for app nodes",
-		Query:       appuioManagedOpenShiftvCPUAppQuery,
-		Unit:        "vCPU",
-	},
-	{
-		Name:        "appuio_managed_openshift_vcpu_app",
-		Description: "vCPU aggregated by cluster and service level for storage nodes",
-		Query:       appuioManagedOpenShiftvCPUStorageQuery,
+		Name:        "appuio_managed_openshift_vcpu",
+		Description: "vCPU aggregated by cluster, node (app, storage), and service level",
+		Query:       appuioManagedOpenShiftvCPUQuery,
 		Unit:        "vCPU",
 	},
 	{
