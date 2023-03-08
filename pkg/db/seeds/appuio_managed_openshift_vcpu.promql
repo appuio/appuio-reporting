@@ -9,9 +9,7 @@ max_over_time(
     # Add the base product identifier.
       label_replace(
           sum by(cluster_id, vshn_service_level, tenant_id, role) (
-              sum by (tenant_id, cluster_id, instance, vshn_service_level) (
-                  min without(prometheus_replica) (node_cpu_info)
-              ) * on (tenant_id, cluster_id, instance, vshn_service_level) group_left(role)
+              min without(prometheus_replica) (node_cpu_info) * on (tenant_id, cluster_id, instance, vshn_service_level) group_left(role)
                   label_join(
                       (group without(prometheus_replica) (kube_node_role{role=~"app|storage"})),
                       "instance",
