@@ -241,7 +241,7 @@ func tenantsForPeriod(ctx context.Context, tx *sqlx.Tx, year int, month time.Mon
 				INNER JOIN facts ON (facts.tenant_id = tenants.id)
 				INNER JOIN date_times ON (facts.date_time_id = date_times.id)
 			WHERE date_times.year = $1 AND date_times.month = $2
-			ORDER BY tenants.source
+			ORDER BY tenants.source, tenants.during
 		`,
 		year, int(month))
 
