@@ -5,34 +5,40 @@
 max_over_time(
   # Add the final product label by joining the base product with the cluster ID, the tenant, and the service class.
   label_join(
-    label_replace(
-    # Add the base product identifier.
+    label_join(
       label_replace(
-          sum by(cluster_id, vshn_service_level, tenant_id, role) (
-              min without(prometheus_replica) (node_cpu_info) * on (tenant_id, cluster_id, instance, vshn_service_level) group_left(role)
-                  label_join(
-                      (group without(prometheus_replica) (kube_node_role{role=~"app|storage"})),
-                      "instance",
-                      "",
-                      "node"
-                  )
-          ),
-          "product",
-          "appuio_managed_openshift_vcpu_$1",
-          "role",
-          "(.*)"
+      # Add the base product identifier.
+        label_replace(
+            sum by(cluster_id, vshn_service_level, tenant_id, role) (
+                min without(prometheus_replica) (node_cpu_info) * on (tenant_id, cluster_id, instance, vshn_service_level) group_left(role)
+                    label_join(
+                        (group without(prometheus_replica) (kube_node_role{role=~"app|storage"})),
+                        "instance",
+                        "",
+                        "node"
+                    )
+            ),
+            "product",
+            "appuio_managed_openshift_vcpu",
+            "",
+            ".*"
+        ),
+        "class",
+        "$1",
+        "vshn_service_level",
+        "(.*)"
       ),
-      "class",
-      "$1",
-      "vshn_service_level",
-      "(.*)"
+      "product",
+      ":",
+      "product",
+      "cluster_id",
+      "tenant_id",
+      "role", # empty namespace
+      "class"
     ),
-    "product",
+    "category",
     ":",
-    "product",
-    "cluster_id",
     "tenant_id",
-    "empty", # empty namespace
-    "class"
+    "cluster_id"
   )[59m:1m]
 )

@@ -34,6 +34,11 @@ local baseSeries = {
   }, '1x120'),
 };
 
+local baseCalculatedLabels = commonLabels {
+  class: super.vshn_service_level,
+  category: super.tenant_id + ':' + super.cluster_id,
+};
+
 {
   tests: [
     c.test(
@@ -42,18 +47,16 @@ local baseSeries = {
       query,
       [
         {
-          labels: c.formatLabels(commonLabels {
-            class: super.vshn_service_level,
+          labels: c.formatLabels(baseCalculatedLabels {
             role: 'app',
-            product: 'appuio_managed_openshift_vcpu_app:c-managed-openshift:t-managed-openshift::ondemand',
+            product: 'appuio_managed_openshift_vcpu:c-managed-openshift:t-managed-openshift:app:ondemand',
           }),
           value: 2,
         },
         {
-          labels: c.formatLabels(commonLabels {
-            class: super.vshn_service_level,
+          labels: c.formatLabels(baseCalculatedLabels {
             role: 'storage',
-            product: 'appuio_managed_openshift_vcpu_storage:c-managed-openshift:t-managed-openshift::ondemand',
+            product: 'appuio_managed_openshift_vcpu:c-managed-openshift:t-managed-openshift:storage:ondemand',
           }),
           value: 1,
         },
