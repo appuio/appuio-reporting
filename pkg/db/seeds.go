@@ -1,8 +1,10 @@
 package db
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"text/template"
 
 	_ "embed"
 
@@ -27,11 +29,8 @@ var appuioCloudPersistentStorageQuery string
 //go:embed seeds/appuio_managed_openshift_vcpu.promql
 var appuioManagedOpenShiftvCPUQuery string
 
-//go:embed seeds/appcat_postgresql_vshn_standalone.promql
-var appcatPostgresqlVSHNStandalone string
-
-//go:embed seeds/appcat_redis_vshn_standalone.promql
-var appcatRedisVSHNStandalone string
+//go:embed seeds/appcat_vshn.promql.tmpl
+var appcatVSHNTemplate string
 
 // DefaultQueries consists of default starter queries.
 var DefaultQueries = []Query{
@@ -72,33 +71,56 @@ var DefaultQueries = []Query{
 		Query:       appuioManagedOpenShiftvCPUQuery,
 		Unit:        "vCPU",
 	},
+}
+
+var renderedQueries = []RenderedQuery{
 	{
-		Name:        "appcat_postgresql_vshn_standalone",
-		Description: "Number of VSHN managed standalone postgres instances",
-		Query:       appcatPostgresqlVSHNStandalone,
-		Unit:        "Instances",
+		Query: Query{
+			Name:        "appcat_postgresql_vshn_standalone",
+			Description: "Number of VSHN managed standalone postgres instances",
+			Unit:        "Instances",
+		},
+		ProductName: "postgres",
+		ServiceName: "postgresql-standalone",
+		Template:    appcatVSHNTemplate,
 	},
 	{
-		Name:        "appcat_redis_vshn_standalone",
-		Description: "Number of VSHN managed standalone redis instances",
-		Query:       appcatRedisVSHNStandalone,
-		Unit:        "Instances",
+		Query: Query{
+			Name:        "appcat_redis_vshn_standalone",
+			Description: "Number of VSHN managed standalone redis instances",
+			Unit:        "Instances",
+		},
+		ProductName: "redis",
+		ServiceName: "redis-standalone",
+		Template:    appcatVSHNTemplate,
 	},
+}
+
+type RenderedQuery struct {
+	Query
+	ProductName string
+	ServiceName string
+	Template    string
 }
 
 // Seed seeds the database with "starter" data.
 // Is idempotent and thus can be executed multiple times in one database.
 func Seed(db *sql.DB) error {
-	return SeedQueries(db, DefaultQueries)
+	return SeedQueries(db, DefaultQueries, renderedQueries)
 }
 
-func SeedQueries(db *sql.DB, queries []Query) error {
+func SeedQueries(db *sql.DB, queries []Query, RenderedQueries []RenderedQuery) error {
 	dbx := NewDBx(db)
 	tx, err := dbx.Beginx()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+
+	queries, err = addRenderedQueries(queries, RenderedQueries)
+	if err != nil {
+		return err
+	}
 
 	if err := createQueries(tx, queries); err != nil {
 		return err
@@ -151,4 +173,26 @@ func queryExistsByName(tx *sqlx.Tx, name string) (bool, error) {
 	var exists bool
 	err := tx.Get(&exists, "SELECT EXISTS(SELECT 1 FROM queries WHERE name = $1)", name)
 	return exists, err
+}
+
+func addRenderedQueries(queries []Query, renderenderedQueries []RenderedQuery) ([]Query, error) {
+	for _, query := range renderenderedQueries {
+		rendered, err := renderQuery(query)
+		if err != nil {
+			return nil, err
+		}
+		query.Query.Query = rendered
+		queries = append(queries, query.Query)
+	}
+	return queries, nil
+}
+
+func renderQuery(query RenderedQuery) (string, error) {
+	tmpl, err := template.New("AppCatService").Parse(query.Template)
+	if err != nil {
+		return "", err
+	}
+	buffer := &bytes.Buffer{}
+	err = tmpl.Execute(buffer, query)
+	return buffer.String(), err
 }

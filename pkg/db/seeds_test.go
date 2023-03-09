@@ -22,7 +22,7 @@ func (s *SeedsTestSuite) TestSeedDefaultQueries() {
 	_, err := d.Exec("DELETE FROM queries")
 	require.NoError(t, err)
 
-	expQueryNum := 7
+	expQueryNum := 8
 
 	count := "SELECT COUNT(*) FROM queries"
 	requireQueryEqual(t, d, 0, count)
@@ -33,7 +33,7 @@ func (s *SeedsTestSuite) TestSeedDefaultQueries() {
 			Description: "Memory usage (maximum of requested and used memory) aggregated by namespace",
 			Unit:        "MiB",
 		},
-	}))
+	}, []db.RenderedQuery{}))
 	t.Log(t, count)
 	requireQueryEqual(t, d, 1, count)
 
