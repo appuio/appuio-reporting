@@ -30,6 +30,9 @@ var appuioManagedOpenShiftvCPUQuery string
 //go:embed seeds/appcat_postgresql_vshn_standalone.promql
 var appcatPostgresqlVSHNStandalone string
 
+//go:embed seeds/appcat_redis_vshn_standalone.promql
+var appcatRedisVSHNStandalone string
+
 // DefaultQueries consists of default starter queries.
 var DefaultQueries = []Query{
 	{
@@ -73,6 +76,12 @@ var DefaultQueries = []Query{
 		Name:        "appcat_postgresql_vshn_standalone",
 		Description: "Number of VSHN managed standalone postgres instances",
 		Query:       appcatPostgresqlVSHNStandalone,
+		Unit:        "Instances",
+	},
+	{
+		Name:        "appcat_redis_vshn_standalone",
+		Description: "Number of VSHN managed standalone redis instances",
+		Query:       appcatRedisVSHNStandalone,
 		Unit:        "Instances",
 	},
 }

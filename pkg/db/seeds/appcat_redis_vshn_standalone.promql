@@ -1,0 +1,64 @@
+# Sum values over one hour and get mean
+sum_over_time(
+  # Udpate label product: $product:$provider:$tenant_id:$claim_namespace:$architecture
+  label_join(
+    # Add label category: $provider:$claim_namespace
+    label_join(
+      # Add label architecture: standalone-$SLA, where $SLA is the content of label appcat.vshn.io/sla
+      label_replace(
+        # Add label provider: vshn
+        label_replace(
+          # Add label product: postgres
+          label_replace(
+            # Default appcat.vshn.io/sla to besteffort if it is not set
+            label_replace(
+              # Copy label appcat.vshn.io/namespace to label claim_namespace
+              label_replace(
+                # Copy label appuio.io/organization to label tenant_id
+                label_replace(
+                  # Fetch all namespaces with label appcat.vshn.io/servicename="redis-standalone"
+                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appcat_vshn_io_servicename="redis-standalone"},
+                  "tenant_id",
+                  "$1",
+                  "label_appuio_io_organization",
+                  "(.*)"
+                ),
+                "claim_namespace",
+                "$1",
+                "label_appcat_vshn_io_claim_namespace",
+                "(.*)"
+              ),
+              "label_appcat_vshn_io_sla",
+              "besteffort",
+              "label_appcat_vshn_io_sla",
+              "^$"
+            ),
+            "product",
+            "redis",
+            "",
+            ""
+          ),
+          "provider",
+          "vshn",
+          "",
+          ""
+        ),
+        "architecture",
+        "standalone-$1",
+        "label_appcat_vshn_io_sla",
+        "(.*)"
+      ),
+      "category",
+      ":",
+      "provider",
+      "claim_namespace"
+    ),
+    "product",
+    ":",
+    "product",
+    "provider",
+    "tenant_id",
+    "claim_namespace",
+    "architecture"
+  )[59m:1m]
+)/60
