@@ -24,6 +24,9 @@ var appuioCloudLoadbalancerQuery string
 //go:embed seeds/appuio_cloud_persistent_storage.promql
 var appuioCloudPersistentStorageQuery string
 
+//go:embed seeds/appuio_managed_openshift_vcpu.promql
+var appuioManagedOpenShiftvCPUQuery string
+
 //go:embed seeds/appcat_postgresql_vshn_standalone.promql
 var appcatPostgresqlVSHNStandalone string
 
@@ -59,6 +62,12 @@ var DefaultQueries = []Query{
 		Description: "Persistent storage usage aggregated by namespace and storageclass",
 		Query:       appuioCloudPersistentStorageQuery,
 		Unit:        "GiB",
+	},
+	{
+		Name:        "appuio_managed_openshift_vcpu",
+		Description: "vCPU aggregated by cluster, node (app, storage), and service level",
+		Query:       appuioManagedOpenShiftvCPUQuery,
+		Unit:        "vCPU",
 	},
 	{
 		Name:        "appcat_postgresql_vshn_standalone",
