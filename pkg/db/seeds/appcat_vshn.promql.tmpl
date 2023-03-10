@@ -16,8 +16,8 @@ sum_over_time(
               label_replace(
                 # Copy label appuio.io/organization to label tenant_id
                 label_replace(
-                  # Fetch all namespaces with label appcat.vshn.io/servicename="postgresql-standalone"
-                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appcat_vshn_io_servicename="postgresql-standalone"},
+                  # Fetch all namespaces with label appcat.vshn.io/servicename="{{.ServiceName}}"
+                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appcat_vshn_io_servicename="{{.ServiceName}}"},
                   "tenant_id",
                   "$1",
                   "label_appuio_io_organization",
@@ -34,7 +34,7 @@ sum_over_time(
               "^$"
             ),
             "product",
-            "postgres",
+            "{{.ProductName}}",
             "",
             ""
           ),
