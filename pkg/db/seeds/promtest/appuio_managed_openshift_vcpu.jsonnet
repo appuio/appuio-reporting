@@ -20,7 +20,7 @@ local baseSeries = {
   }, '1x120'),
   appNodeCPUInfoLabel1: c.series('node_cpu_info', commonLabels {
     instance: 'app-test',
-    core: '2',
+    core: '1',
   }, '1x120'),
 
   storageNodeRoleLabel: c.series('kube_node_role', commonLabels {
