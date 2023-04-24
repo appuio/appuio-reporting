@@ -25,6 +25,7 @@ max_over_time(
       "product",
       "cluster_id",
       "tenant_id",
+      "place_holder",
       "class"
     ),
     "category",

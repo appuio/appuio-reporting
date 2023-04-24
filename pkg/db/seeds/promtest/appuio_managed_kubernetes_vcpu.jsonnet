@@ -37,7 +37,7 @@ local baseCalculatedLabels = commonLabels {
       [
         {
           labels: c.formatLabels(baseCalculatedLabels {
-            product: 'appuio_managed_kubernetes_vcpu:c-managed-kubernetes:t-managed-kubernetes:standard',
+            product: 'appuio_managed_kubernetes_vcpu:c-managed-kubernetes:t-managed-kubernetes::standard',
           }),
           value: 3,
         },
