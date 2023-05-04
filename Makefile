@@ -83,3 +83,8 @@ clean: docker-compose-down ## Cleans local build artifacts
 	tar -xzf .cache/prometheus.tar.gz -C .cache
 	mv .cache/prometheus-$(PROMETHEUS_VERSION).$(PROMETHEUS_DIST)-$(PROMETHEUS_ARCH) .cache/prometheus
 	rm -rf .cache/*.tar.gz
+
+# current date in UTC in ISO 8601 format (RFC 3339) with Z as timezone that works on both linux and macos
+.PHONY: current-date
+current-date:
+	date -u +"%Y-%m-%dT%H:%M:%SZ"
