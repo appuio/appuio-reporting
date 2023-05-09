@@ -85,7 +85,7 @@ var DefaultQueries = []Query{
 var renderedQueries = []RenderedQuery{
 	{
 		Query: Query{
-			Name:        "appcat_postgresql_managed_by_vshn",
+			Name:        "appcat_postgresql_by_vshn",
 			Description: "Number of VSHN managed postgres instances",
 			Unit:        "Instances",
 		},
@@ -95,7 +95,7 @@ var renderedQueries = []RenderedQuery{
 	},
 	{
 		Query: Query{
-			Name:        "appcat_redis_vshn_standalone",
+			Name:        "appcat_redis_by_vshn",
 			Description: "Number of VSHN managed redis instances",
 			Unit:        "Instances",
 		},
