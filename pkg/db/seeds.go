@@ -85,22 +85,22 @@ var DefaultQueries = []Query{
 var renderedQueries = []RenderedQuery{
 	{
 		Query: Query{
-			Name:        "appcat_postgresql_vshn_standalone",
-			Description: "Number of VSHN managed standalone postgres instances",
+			Name:        "appcat_postgresql_managed_by_vshn",
+			Description: "Number of VSHN managed postgres instances",
 			Unit:        "Instances",
 		},
 		ProductName: "postgres",
-		ServiceName: "postgresql-standalone",
+		ServiceName: "appcat-postgresql",
 		Template:    appcatVSHNTemplate,
 	},
 	{
 		Query: Query{
 			Name:        "appcat_redis_vshn_standalone",
-			Description: "Number of VSHN managed standalone redis instances",
+			Description: "Number of VSHN managed redis instances",
 			Unit:        "Instances",
 		},
 		ProductName: "redis",
-		ServiceName: "redis-standalone",
+		ServiceName: "appcat-redis",
 		Template:    appcatVSHNTemplate,
 	},
 }
