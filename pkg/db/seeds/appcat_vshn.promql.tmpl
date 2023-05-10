@@ -1,3 +1,4 @@
+sum by (label_appuio_io_organization,label_appcat_vshn_io_claim_namespace,label_appcat_vshn_io_sla,product,provider,architecture, category, claim_namespace,tenant_id) (
 # Sum values over one hour and get mean
 sum_over_time(
   # Udpate label product: $product:$provider:$tenant_id:$claim_namespace:$architecture
@@ -16,8 +17,8 @@ sum_over_time(
               label_replace(
                 # Copy label appuio.io/organization to label tenant_id
                 label_replace(
-                  # Fetch all namespaces with label appcat.vshn.io/servicename="{{.ServiceName}}"
-                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appcat_vshn_io_servicename="{{.ServiceName}}"},
+                  # Fetch all namespaces with label appcat.vshn.io/billing-name="{{.ServiceName}}"
+                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appcat_vshn_io_billing_name="{{.ServiceName}}"} * on (namespace) group_right(label_appuio_io_organization,label_appcat_vshn_io_claim_namespace,label_appcat_vshn_io_sla,product,provider,architecture, category, claim_namespace, tenant_id) kube_pod_info{created_by_kind!="Job"},
                   "tenant_id",
                   "$1",
                   "label_appuio_io_organization",
@@ -61,4 +62,4 @@ sum_over_time(
     "claim_namespace",
     "architecture"
   )[59m:1m]
-)/60
+)/60 )
