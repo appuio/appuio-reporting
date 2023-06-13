@@ -5,7 +5,7 @@ sum_over_time(
   label_join(
     # Add label category: $provider:$claim_namespace
     label_join(
-      # Add label architecture: standalone-$SLA, where $SLA is the content of label appcat.vshn.io/sla
+      # Add label architecture: $SLA, where $SLA is the content of label appcat.vshn.io/sla
       label_replace(
         # Add label provider: vshn
         label_replace(
@@ -18,7 +18,7 @@ sum_over_time(
                 # Copy label appuio.io/organization to label tenant_id
                 label_replace(
                   # Fetch all namespaces with label appcat.vshn.io/billing-name="{{.ServiceName}}"
-                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appcat_vshn_io_billing_name="{{.ServiceName}}"} * on (namespace) group_right(label_appuio_io_organization,label_appcat_vshn_io_claim_namespace,label_appcat_vshn_io_sla,product,provider,architecture, category, claim_namespace, tenant_id) kube_pod_info{created_by_kind!="Job"},
+                  kube_namespace_labels{label_appuio_io_organization=~".+", label_appuio_io_billing_name="{{.ServiceName}}"} * on (namespace) group_right(label_appuio_io_organization,label_appcat_vshn_io_claim_namespace,label_appcat_vshn_io_sla,product,provider,architecture, category, claim_namespace, tenant_id) kube_pod_info{created_by_kind!="Job"},
                   "tenant_id",
                   "$1",
                   "label_appuio_io_organization",
@@ -44,8 +44,8 @@ sum_over_time(
           "",
           ""
         ),
-        "architecture",
-        "standalone-$1",
+        "sla",
+        "$1",
         "label_appcat_vshn_io_sla",
         "(.*)"
       ),
@@ -60,6 +60,6 @@ sum_over_time(
     "provider",
     "tenant_id",
     "claim_namespace",
-    "architecture"
+    "sla"
   )[59m:1m]
 )/60 )
