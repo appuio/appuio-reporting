@@ -1,10 +1,8 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
-	"text/template"
 
 	_ "embed"
 
@@ -32,8 +30,7 @@ var appuioManagedOpenShiftvCPUQuery string
 //go:embed seeds/appuio_managed_kubernetes_vcpu.promql
 var appuioManagedKubernetesvCPUQuery string
 
-//go:embed seeds/appcat_vshn.promql.tmpl
-var appcatVSHNTemplate string
+var appcatQuery = "appcat:billing"
 
 // DefaultQueries consists of default starter queries.
 var DefaultQueries = []Query{
@@ -80,56 +77,27 @@ var DefaultQueries = []Query{
 		Query:       appuioManagedKubernetesvCPUQuery,
 		Unit:        "vCPU",
 	},
-}
-
-var renderedQueries = []RenderedQuery{
 	{
-		Query: Query{
-			Name:        "appcat_postgresql_by_vshn",
-			Description: "Number of VSHN managed postgres instances",
-			Unit:        "Instances",
-		},
-		ProductName: "appcat_postgres",
-		ServiceName: "appcat-postgresql",
-		Template:    appcatVSHNTemplate,
+		Name:        "appcat_services",
+		Description: "AppCat service instances query",
+		Query:       appcatQuery,
+		Unit:        "instances",
 	},
-	{
-		Query: Query{
-			Name:        "appcat_redis_by_vshn",
-			Description: "Number of VSHN managed redis instances",
-			Unit:        "Instances",
-		},
-		ProductName: "appcat_redis",
-		ServiceName: "appcat-redis",
-		Template:    appcatVSHNTemplate,
-	},
-}
-
-type RenderedQuery struct {
-	Query
-	ProductName string
-	ServiceName string
-	Template    string
 }
 
 // Seed seeds the database with "starter" data.
 // Is idempotent and thus can be executed multiple times in one database.
 func Seed(db *sql.DB) error {
-	return SeedQueries(db, DefaultQueries, renderedQueries)
+	return SeedQueries(db, DefaultQueries)
 }
 
-func SeedQueries(db *sql.DB, queries []Query, RenderedQueries []RenderedQuery) error {
+func SeedQueries(db *sql.DB, queries []Query) error {
 	dbx := NewDBx(db)
 	tx, err := dbx.Beginx()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-
-	queries, err = addRenderedQueries(queries, RenderedQueries)
-	if err != nil {
-		return err
-	}
 
 	if err := createQueries(tx, queries); err != nil {
 		return err
@@ -182,26 +150,4 @@ func queryExistsByName(tx *sqlx.Tx, name string) (bool, error) {
 	var exists bool
 	err := tx.Get(&exists, "SELECT EXISTS(SELECT 1 FROM queries WHERE name = $1)", name)
 	return exists, err
-}
-
-func addRenderedQueries(queries []Query, renderenderedQueries []RenderedQuery) ([]Query, error) {
-	for _, query := range renderenderedQueries {
-		rendered, err := renderQuery(query)
-		if err != nil {
-			return nil, err
-		}
-		query.Query.Query = rendered
-		queries = append(queries, query.Query)
-	}
-	return queries, nil
-}
-
-func renderQuery(query RenderedQuery) (string, error) {
-	tmpl, err := template.New("AppCatService").Parse(query.Template)
-	if err != nil {
-		return "", err
-	}
-	buffer := &bytes.Buffer{}
-	err = tmpl.Execute(buffer, query)
-	return buffer.String(), err
 }

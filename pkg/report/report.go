@@ -80,6 +80,7 @@ func runQuery(ctx context.Context, tx *sqlx.Tx, prom PromQuerier, query db.Query
 		defer cancel()
 		promQCtx = ctx
 	}
+
 	// The data in the database is from T to T+1h. Prometheus queries backwards from T to T-1h.
 	res, _, err := prom.Query(promQCtx, query.Query, from.Add(time.Hour))
 	if err != nil {
