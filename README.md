@@ -107,7 +107,7 @@ See `docker-compose.yml` for the configuration.
 
 ```sh
 # Needs to be repeated after a Docker restart
-make docker-compose-up  
+make docker-compose-up
 
 # Next command asks for a password, it is "reporting"
 createdb --username=reporting -h localhost -p 5432 appuio-cloud-reporting-test
