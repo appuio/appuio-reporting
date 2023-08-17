@@ -1,0 +1,39 @@
+# Calculates number of clusters per cluster, but only for clusters with old billing
+# Yes, this is always 1
+# Structure of resulting product label "query:cloud:tenant:cluster:sla"
+
+# Max values over one hour.
+max_over_time(
+  # Add the final product label by joining the base product with the cluster ID, the tenant, and the service class.
+  label_join(
+    label_join(
+      label_replace(
+      # Add the base product identifier.
+        label_replace(
+            max by(cluster_id, vshn_service_level, tenant_id, cloud_provider) (
+                appuio_managed_info{vshn_service_level=~"(zero|standard|professional|premium)"}
+            ),
+            "product",
+            "appuio_managed_openshift_clusters",
+            "",
+            ".*"
+        ),
+        "class",
+        "$0",
+        "vshn_service_level",
+        "(.*)"
+      ),
+      "product",
+      ":",
+      "product",
+      "cloud_provider",
+      "tenant_id",
+      "cluster_id",
+      "class"
+    ),
+    "category",
+    ":",
+    "tenant_id",
+    "cluster_id"
+  )[58m:1m]
+)
