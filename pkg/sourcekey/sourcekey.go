@@ -13,14 +13,7 @@ const elementSeparator = ":"
 // SourceKey represents a source key to look up dimensions objects (currently queries and products).
 // It implements the lookup logic found in https://kb.vshn.ch/appuio-cloud/references/architecture/metering-data-flow.html#_system_idea.
 type SourceKey struct {
-	Query     string
-	Zone      string
-	Tenant    string
-	Namespace string
-
-	Class string
-
-	Parts []string
+	parts []string
 }
 
 // Parse parses a source key in the format of "query:zone:tenant:namespace:class" or "query:zone:tenant:namespace".
@@ -29,18 +22,31 @@ func Parse(raw string) (SourceKey, error) {
 	if parts[len(parts)-1] == "" {
 		parts = parts[0 : len(parts)-1]
 	}
-	if len(parts) == 4 {
-		return SourceKey{parts[0], parts[1], parts[2], parts[3], "", parts}, nil
-	} else if len(parts) >= 5 {
-		return SourceKey{parts[0], parts[1], parts[2], parts[3], parts[4], parts}, nil
+	if len(parts) >= 4 {
+		return SourceKey{parts}, nil
 	}
 
 	return SourceKey{}, fmt.Errorf("expected key with at least 4 elements separated by `%s` got %d", elementSeparator, len(parts))
 }
 
+// Tenant returns the third element of the source key which was historically used as the tenant.
+//
+// Deprecated: We would like to get rid of this and read the tenant from a metric label.
+func (k SourceKey) Tenant() string {
+	return k.parts[2]
+}
+
+// Part returns the i-th part of the source key, or an empty string if no such part exists
+func (k SourceKey) Part(i int) string {
+	if i < len(k.parts) {
+		return k.parts[i]
+	}
+	return ""
+}
+
 // String returns the string representation "query:zone:tenant:namespace:class" of the key.
 func (k SourceKey) String() string {
-	return strings.Join(k.Parts, elementSeparator)
+	return strings.Join(k.parts, elementSeparator)
 }
 
 // LookupKeys generates lookup keys for a dimension object in the database.
@@ -48,7 +54,7 @@ func (k SourceKey) String() string {
 func (k SourceKey) LookupKeys() []string {
 
 	keys := make([]string, 0)
-	currentKeyBase := k.Parts
+	currentKeyBase := k.parts
 
 	for len(currentKeyBase) > 1 {
 		// For the base key of a given length l, the inner l-2 elements are to be replaced with wildcards in all possible combinations.
