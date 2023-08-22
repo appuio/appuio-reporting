@@ -27,6 +27,9 @@ var appuioCloudPersistentStorageQuery string
 //go:embed seeds/appuio_managed_openshift_vcpu.promql
 var appuioManagedOpenShiftvCPUQuery string
 
+//go:embed seeds/appuio_managed_openshift_clusters_legacy.promql
+var appuioManagedOpenShiftClusterQuery string
+
 //go:embed seeds/appuio_managed_kubernetes_vcpu.promql
 var appuioManagedKubernetesvCPUQuery string
 
@@ -70,6 +73,12 @@ var DefaultQueries = []Query{
 		Description: "vCPU aggregated by cluster, node (app, storage), and service level",
 		Query:       appuioManagedOpenShiftvCPUQuery,
 		Unit:        "vCPU",
+	},
+	{
+		Name:        "appuio_managed_openshift_clusters",
+		Description: "Cluster base fee",
+		Query:       appuioManagedOpenShiftClusterQuery,
+		Unit:        "Clusters",
 	},
 	{
 		Name:        "appuio_managed_kubernetes_vcpu",

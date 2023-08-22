@@ -4,8 +4,12 @@ local query = importstr '../appuio_managed_openshift_vcpu.promql';
 
 local commonLabels = {
   cluster_id: 'c-managed-openshift',
+};
+
+local infoLabels = commonLabels {
   tenant_id: 't-managed-openshift',
   vshn_service_level: 'ondemand',
+  cloud_provider: 'cloudscale',
 };
 
 local baseSeries = {
@@ -32,9 +36,11 @@ local baseSeries = {
     instance: 'storage-test',
     core: '0',
   }, '1x120'),
+
+  appuioInfoLabel: c.series('appuio_managed_info', infoLabels, '1x120'),
 };
 
-local baseCalculatedLabels = commonLabels {
+local baseCalculatedLabels = infoLabels {
   class: super.vshn_service_level,
   category: super.tenant_id + ':' + super.cluster_id,
 };
@@ -49,14 +55,14 @@ local baseCalculatedLabels = commonLabels {
         {
           labels: c.formatLabels(baseCalculatedLabels {
             role: 'app',
-            product: 'appuio_managed_openshift_vcpu:c-managed-openshift:t-managed-openshift:app:ondemand',
+            product: 'appuio_managed_openshift_vcpu:cloudscale:t-managed-openshift:c-managed-openshift:ondemand:app',
           }),
           value: 2,
         },
         {
           labels: c.formatLabels(baseCalculatedLabels {
             role: 'storage',
-            product: 'appuio_managed_openshift_vcpu:c-managed-openshift:t-managed-openshift:storage:ondemand',
+            product: 'appuio_managed_openshift_vcpu:cloudscale:t-managed-openshift:c-managed-openshift:ondemand:storage',
           }),
           value: 1,
         },
