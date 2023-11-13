@@ -14,11 +14,6 @@ IMG_TAG ?= latest
 # Image URL to use all building/pushing image targets
 CONTAINER_IMG ?= local.dev/$(PROJECT_OWNER)/$(PROJECT_NAME):$(IMG_TAG)
 
-## COMPOSE:
-COMPOSE_CMD ?= docker-compose
-COMPOSE_DB_URL ?= postgres://reporting:reporting@localhost:55432/reporting-db?sslmode=disable
-COMPOSE_FILE ?= docker-compose.yml
-
 PROMETHEUS_VERSION ?= 2.40.7
 PROMETHEUS_DIST ?= $(shell go env GOOS)
 PROMETHEUS_ARCH ?= $(shell go env GOARCH)

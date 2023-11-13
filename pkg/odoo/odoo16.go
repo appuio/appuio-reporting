@@ -1,17 +1,26 @@
 package odoo
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/go-logr/logr"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 type OdooAPIClient struct {
-	OdooURL           string
-	OauthClientID     string
-	OauthClientSecret string
-	logger            logr.Logger
+	odooURL     string
+	logger      logr.Logger
+	oauthClient *http.Client
+}
+
+type apiObject struct {
+	Data []OdooMeteredBillingRecord `json:"data"`
 }
 
 type OdooMeteredBillingRecord struct {
@@ -25,18 +34,44 @@ type OdooMeteredBillingRecord struct {
 	Timerange            string  `json:"timerange"`
 }
 
-func NewOdooAPIClient(odooURL string, oauthClientId string, oauthClientSecret string, logger logr.Logger) (*OdooAPIClient, error) {
+func NewOdooAPIClient(ctx context.Context, odooURL string, oauthTokenURL string, oauthClientId string, oauthClientSecret string, logger logr.Logger) *OdooAPIClient {
+	oauthConfig := clientcredentials.Config{
+		ClientID:     oauthClientId,
+		ClientSecret: oauthClientSecret,
+		TokenURL:     oauthTokenURL,
+	}
+	oauthClient := oauthConfig.Client(ctx)
 	return &OdooAPIClient{
-		OdooURL:           odooURL,
-		OauthClientID:     oauthClientId,
-		OauthClientSecret: oauthClientSecret,
-		logger:            logger,
-	}, nil
+		odooURL:     odooURL,
+		logger:      logger,
+		oauthClient: oauthClient,
+	}
 }
 
-func (c OdooAPIClient) SendData(ctx context.Context, data OdooMeteredBillingRecord) error {
-	str, _ := json.Marshal(data)
-	c.logger.Info("<" + data.InstanceID + ">")
-	c.logger.Info(string(str))
+func NewOdooAPIWithClient(odooURL string, client *http.Client, logger logr.Logger) *OdooAPIClient {
+	return &OdooAPIClient{
+		odooURL:     odooURL,
+		logger:      logger,
+		oauthClient: client,
+	}
+}
+
+func (c OdooAPIClient) SendData(ctx context.Context, data []OdooMeteredBillingRecord) error {
+	apiObject := apiObject{
+		Data: data,
+	}
+	str, _ := json.Marshal(apiObject)
+	resp, err := c.oauthClient.Post(c.odooURL, "application/json", bytes.NewBuffer(str))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	c.logger.Info("Records sent to Odoo API", "status", resp.Status, "body", string(body), "numberOfRecords", len(data))
+
+	if resp.StatusCode/100 != 2 {
+		return errors.New(fmt.Sprintf("API error when sending records to Odoo:\n%s", body))
+	}
+
 	return nil
 }

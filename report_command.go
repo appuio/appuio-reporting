@@ -15,10 +15,11 @@ import (
 )
 
 type reportCommand struct {
-	PrometheusURL    string
-	OdooURL          string
-	OdooClientId     string
-	OdooClientSecret string
+	PrometheusURL     string
+	OdooURL           string
+	OdooOauthTokenURL string
+	OdooClientId      string
+	OdooClientSecret  string
 
 	ReportArgs report.ReportArgs
 
@@ -44,6 +45,8 @@ func newReportCommand() *cli.Command {
 				EnvVars: envVars("PROM_URL"), Destination: &command.PrometheusURL, Value: "http://localhost:9090"},
 			&cli.StringFlag{Name: "odoo-url", Usage: "URL of the Odoo Metered Billing API",
 				EnvVars: envVars("ODOO_URL"), Destination: &command.OdooURL, Value: "http://localhost:8080"},
+			&cli.StringFlag{Name: "odoo-oauth-token-url", Usage: "Oauth Token URL to authenticate with Odoo metered billing API",
+				EnvVars: envVars("ODOO_OAUTH_TOKEN_URL"), Destination: &command.OdooOauthTokenURL, Required: true, DefaultText: defaultTextForRequiredFlags},
 			&cli.StringFlag{Name: "odoo-oauth-client-id", Usage: "Client ID of the oauth client to interact with Odoo metered billing API",
 				EnvVars: envVars("ODOO_OAUTH_CLIENT_ID"), Destination: &command.OdooClientId, Required: true, DefaultText: defaultTextForRequiredFlags},
 			&cli.StringFlag{Name: "odoo-oauth-client-secret", Usage: "Client secret of the oauth client to interact with Odoo metered billing API",
@@ -72,6 +75,8 @@ func newReportCommand() *cli.Command {
 				EnvVars: envVars("THANOS_ALLOW_PARTIAL_RESPONSES"), Destination: &command.ThanosAllowPartialResponses, Required: false, DefaultText: "false"},
 			&cli.StringFlag{Name: "org-id", Usage: "Sets the X-Scope-OrgID header to this value on requests to Prometheus", Value: "",
 				EnvVars: envVars("ORG_ID"), Destination: &command.OrgId, Required: false, DefaultText: "empty"},
+			&cli.StringFlag{Name: "debug-override-sales-order-id", Usage: "Overrides the sales order ID to a static constant for debugging purposes", Value: "",
+				EnvVars: envVars("DEBUG_OVERRIDE_SALES_ORDER_ID"), Destination: &command.ReportArgs.OverrideSalesOrderID, Required: false, DefaultText: "empty"},
 		},
 	}
 }
@@ -91,10 +96,7 @@ func (cmd *reportCommand) execute(cliCtx *cli.Context) error {
 		return fmt.Errorf("could not create prometheus client: %w", err)
 	}
 
-	odooClient, err := odoo.NewOdooAPIClient(cmd.OdooURL, cmd.OdooClientId, cmd.OdooClientSecret, log)
-	if err != nil {
-		return fmt.Errorf("could not create odoo client: %w", err)
-	}
+	odooClient := odoo.NewOdooAPIClient(ctx, cmd.OdooURL, cmd.OdooOauthTokenURL, cmd.OdooClientId, cmd.OdooClientSecret, log)
 
 	o := make([]report.Option, 0)
 	if cmd.PromQueryTimeout != 0 {

@@ -105,11 +105,11 @@ func (s *ReportSuite) TestReport_Run() {
 	err := report.Run(context.Background(), o, prom, args, from)
 	require.NoError(t, err)
 
-	require.Equal(t, "my-namespace", o.lastReceivedData.ItemGroupDescription)
-	require.Equal(t, "my-tenant", o.lastReceivedData.InstanceID)
-	require.Equal(t, "my-product", o.lastReceivedData.ItemDescription)
-	require.Equal(t, 1.0, o.lastReceivedData.ConsumedUnits)
-	require.Equal(t, "SO00000", o.lastReceivedData.SalesOrderID)
+	require.Equal(t, "my-namespace", o.lastReceivedData[0].ItemGroupDescription)
+	require.Equal(t, "my-tenant", o.lastReceivedData[0].InstanceID)
+	require.Equal(t, "my-product", o.lastReceivedData[0].ItemDescription)
+	require.Equal(t, 1.0, o.lastReceivedData[0].ConsumedUnits)
+	require.Equal(t, "SO00000", o.lastReceivedData[0].SalesOrderID)
 }
 
 func (s *ReportSuite) TestReport_RequireErrorWhenInvalidTemplateVariable() {
@@ -150,6 +150,20 @@ func (s *ReportSuite) TestReport_RequireErrorWhenNoSalesOrder() {
 	require.Error(t, err)
 }
 
+func (s *ReportSuite) TestReport_OverrideSalesOrderID() {
+	t := s.T()
+	o := &MockOdooClient{}
+	prom := s.PrometheusAPIClient()
+	args := getReportArgs()
+	args.OverrideSalesOrderID = "myoverride"
+
+	from := time.Date(2020, time.January, 23, 17, 0, 0, 0, time.UTC)
+
+	err := report.Run(context.Background(), o, prom, args, from)
+	require.NoError(t, err)
+	require.Equal(t, "myoverride", o.lastReceivedData[0].SalesOrderID)
+}
+
 func getReportArgs() report.ReportArgs {
 	return report.ReportArgs{
 		ProductID:                   "myProductId",
@@ -164,11 +178,11 @@ func getReportArgs() report.ReportArgs {
 
 type MockOdooClient struct {
 	totalReceived    int
-	lastReceivedData odoo.OdooMeteredBillingRecord
+	lastReceivedData []odoo.OdooMeteredBillingRecord
 }
 
-func (c *MockOdooClient) SendData(ctx context.Context, data odoo.OdooMeteredBillingRecord) error {
+func (c *MockOdooClient) SendData(ctx context.Context, data []odoo.OdooMeteredBillingRecord) error {
 	c.lastReceivedData = data
-	c.totalReceived = c.totalReceived + 1
+	c.totalReceived += 1
 	return nil
 }

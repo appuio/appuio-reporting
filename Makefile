@@ -37,7 +37,7 @@ ensure-prometheus: .cache/prometheus ## Ensures that Prometheus is installed in 
 
 .PHONY: test
 test: export ACR_DB_URL = postgres://user:password@localhost:55432/db?sslmode=disable
-test: 
+test: ensure-prometheus
 	go test ./... -tags integration -coverprofile cover.out -covermode atomic
 
 .PHONY: fmt

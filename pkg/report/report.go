@@ -20,7 +20,7 @@ type PromQuerier interface {
 }
 
 type OdooClient interface {
-	SendData(ctx context.Context, data odoo.OdooMeteredBillingRecord) error
+	SendData(ctx context.Context, data []odoo.OdooMeteredBillingRecord) error
 }
 
 type ReportArgs struct {
@@ -31,6 +31,7 @@ type ReportArgs struct {
 	UnitID                      string
 	ProductID                   string
 	TimerangeSize               time.Duration
+	OverrideSalesOrderID        string
 }
 
 const SalesOrderIDLabel = "sales_order_id"
@@ -71,7 +72,7 @@ func Run(ctx context.Context, odoo OdooClient, prom PromQuerier, args ReportArgs
 	return nil
 }
 
-func runQuery(ctx context.Context, odoo OdooClient, prom PromQuerier, args ReportArgs, from time.Time, opts options) error {
+func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args ReportArgs, from time.Time, opts options) error {
 	promQCtx := ctx
 	if opts.prometheusQueryTimeout != 0 {
 		ctx, cancel := context.WithTimeout(promQCtx, opts.prometheusQueryTimeout)
@@ -91,54 +92,63 @@ func runQuery(ctx context.Context, odoo OdooClient, prom PromQuerier, args Repor
 	}
 
 	var errs error
+	var records []odoo.OdooMeteredBillingRecord
 	for _, sample := range samples {
-		if err := processSample(ctx, odoo, args, from, sample); err != nil {
-
+		record, err := processSample(ctx, odooClient, args, from, sample)
+		if err != nil {
 			errs = multierr.Append(errs, fmt.Errorf("failed to process sample: %w", err))
+		} else {
+			records = append(records, *record)
 		}
 	}
 
-	return errs
+	return multierr.Append(errs, odooClient.SendData(ctx, records))
 }
 
-func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, from time.Time, s *model.Sample) error {
+func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, from time.Time, s *model.Sample) (*odoo.OdooMeteredBillingRecord, error) {
 	variables := extractTemplateVars(args)
 	values := make(map[string]string)
 
 	for i := 0; i < len(variables); i++ {
 		value, err := getMetricLabel(s.Metric, variables[i])
 		if err != nil {
-			return fmt.Errorf("Unable to obtain sales order ID from sample: %w", err)
+			return nil, fmt.Errorf("Unable to obtain label %s from sample: %w", variables[i], err)
 		}
 		values[variables[i]] = string(value)
 	}
-	salesOrderID, err := getMetricLabel(s.Metric, SalesOrderIDLabel)
-	if err != nil {
-		return err
+	salesOrderID := ""
+	if args.OverrideSalesOrderID != "" {
+		salesOrderID = args.OverrideSalesOrderID
+	} else {
+		sid, err := getMetricLabel(s.Metric, SalesOrderIDLabel)
+		if err != nil {
+			return nil, err
+		}
+		salesOrderID = string(sid)
 	}
 
 	jsonStr, err := json.Marshal(values)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	vm := jsonnet.MakeVM()
 
 	instance, err := vm.EvaluateAnonymousSnippet("snip.json", fmt.Sprintf("\"%s\" %% %s", args.InstancePattern, jsonStr))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	instance = strings.Trim(instance, "\"\n")
 
 	group, err := vm.EvaluateAnonymousSnippet("snip.json", fmt.Sprintf("\"%s\" %% %s", args.ItemGroupDescriptionPattern, jsonStr))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	group = strings.Trim(group, "\"\n")
 
 	description, err := vm.EvaluateAnonymousSnippet("snip.json", fmt.Sprintf("\"%s\" %% %s", args.ItemDescriptionPattern, jsonStr))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	description = strings.Trim(description, "\"\n")
 
@@ -149,13 +159,13 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 		InstanceID:           instance,
 		ItemDescription:      description,
 		ItemGroupDescription: group,
-		SalesOrderID:         string(salesOrderID),
+		SalesOrderID:         salesOrderID,
 		UnitID:               args.UnitID,
 		ConsumedUnits:        float64(s.Value),
 		Timerange:            timerange,
 	}
 
-	return odooClient.SendData(ctx, record)
+	return &record, nil
 }
 
 func extractTemplateVars(args ReportArgs) []string {
