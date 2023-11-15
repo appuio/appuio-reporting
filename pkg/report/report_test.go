@@ -96,9 +96,9 @@ func (s *ReportSuite) TestReport_Run() {
 	prom := s.PrometheusAPIClient()
 	args := getReportArgs()
 
-	args.InstancePattern = "%(tenant)s"
-	args.ItemGroupDescriptionPattern = "%(namespace)s"
-	args.ItemDescriptionPattern = "%(product)s"
+	args.InstanceJsonnet = `local labels = std.extVar("labels"); "%(tenant)s" % labels`
+	args.ItemGroupDescriptionJsonnet = `local labels = std.extVar("labels"); "%(namespace)s" % labels`
+	args.ItemDescriptionJsonnet = `local labels = std.extVar("labels"); "%(product)s" % labels`
 
 	from := time.Date(2020, time.January, 23, 17, 0, 0, 0, time.UTC)
 
@@ -119,19 +119,19 @@ func (s *ReportSuite) TestReport_RequireErrorWhenInvalidTemplateVariable() {
 	from := time.Date(2020, time.January, 23, 17, 0, 0, 0, time.UTC)
 
 	args := getReportArgs()
-	args.InstancePattern = "%(doesnotexist)s"
+	args.InstanceJsonnet = `local labels = std.extVar("labels"); "%(doesnotexist)s" % labels`
 
 	err := report.Run(context.Background(), o, prom, args, from)
 	require.Error(t, err)
 
 	args = getReportArgs()
-	args.ItemGroupDescriptionPattern = "%(doesnotexist)s"
+	args.ItemGroupDescriptionJsonnet = `local labels = std.extVar("labels"); "%(doesnotexist)s" % labels`
 
 	err = report.Run(context.Background(), o, prom, args, from)
 	require.Error(t, err)
 
 	args = getReportArgs()
-	args.ItemDescriptionPattern = "%(doesnotexist)s"
+	args.ItemDescriptionJsonnet = `local labels = std.extVar("labels"); "%(doesnotexist)s" % labels`
 
 	err = report.Run(context.Background(), o, prom, args, from)
 	require.Error(t, err)
@@ -169,9 +169,9 @@ func getReportArgs() report.ReportArgs {
 		ProductID:                   "myProductId",
 		UnitID:                      "unit_kg",
 		Query:                       fmt.Sprintf(promTestquery, 1),
-		InstancePattern:             "myinstance",
-		ItemGroupDescriptionPattern: "myitemgroup",
-		ItemDescriptionPattern:      "myitemdescription",
+		InstanceJsonnet:             `"myinstance"`,
+		ItemGroupDescriptionJsonnet: `"myitemgroup"`,
+		ItemDescriptionJsonnet:      `"myitemdescription"`,
 		TimerangeSize:               time.Hour,
 	}
 }

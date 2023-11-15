@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/appuio/appuio-cloud-reporting/pkg/odoo"
@@ -25,9 +24,9 @@ type OdooClient interface {
 
 type ReportArgs struct {
 	Query                       string
-	InstancePattern             string
-	ItemDescriptionPattern      string
-	ItemGroupDescriptionPattern string
+	InstanceJsonnet             string
+	ItemDescriptionJsonnet      string
+	ItemGroupDescriptionJsonnet string
 	UnitID                      string
 	ProductID                   string
 	TimerangeSize               time.Duration
@@ -106,16 +105,8 @@ func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args
 }
 
 func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, from time.Time, s *model.Sample) (*odoo.OdooMeteredBillingRecord, error) {
-	variables := extractTemplateVars(args)
-	values := make(map[string]string)
+	metricLabels := s.Metric
 
-	for i := 0; i < len(variables); i++ {
-		value, err := getMetricLabel(s.Metric, variables[i])
-		if err != nil {
-			return nil, fmt.Errorf("Unable to obtain label %s from sample: %w", variables[i], err)
-		}
-		values[variables[i]] = string(value)
-	}
 	salesOrderID := ""
 	if args.OverrideSalesOrderID != "" {
 		salesOrderID = args.OverrideSalesOrderID
@@ -127,41 +118,49 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 		salesOrderID = string(sid)
 	}
 
-	jsonStr, err := json.Marshal(values)
+	labelList, err := json.Marshal(metricLabels)
 	if err != nil {
 		return nil, err
 	}
 
 	vm := jsonnet.MakeVM()
+	vm.ExtCode("labels", string(labelList))
 
-	instance, err := vm.EvaluateAnonymousSnippet("snip.json", fmt.Sprintf("\"%s\" %% %s", args.InstancePattern, jsonStr))
+	instance, err := vm.EvaluateAnonymousSnippet("instance.json", args.InstanceJsonnet)
 	if err != nil {
 		return nil, err
 	}
-	instance = strings.Trim(instance, "\"\n")
+	instanceStr := ""
+	json.Unmarshal([]byte(instance), &instanceStr)
 
-	group, err := vm.EvaluateAnonymousSnippet("snip.json", fmt.Sprintf("\"%s\" %% %s", args.ItemGroupDescriptionPattern, jsonStr))
-	if err != nil {
-		return nil, err
+	var groupStr string
+	if args.ItemGroupDescriptionJsonnet != "" {
+		group, err := vm.EvaluateAnonymousSnippet("group.json", args.ItemGroupDescriptionJsonnet)
+		if err != nil {
+			return nil, err
+		}
+		json.Unmarshal([]byte(group), &groupStr)
 	}
-	group = strings.Trim(group, "\"\n")
 
-	description, err := vm.EvaluateAnonymousSnippet("snip.json", fmt.Sprintf("\"%s\" %% %s", args.ItemDescriptionPattern, jsonStr))
-	if err != nil {
-		return nil, err
+	var descriptionStr string
+	if args.ItemDescriptionJsonnet != "" {
+		description, err := vm.EvaluateAnonymousSnippet("description.json", args.ItemDescriptionJsonnet)
+		if err != nil {
+			return nil, err
+		}
+		json.Unmarshal([]byte(description), &descriptionStr)
 	}
-	description = strings.Trim(description, "\"\n")
 
 	timerange := odoo.Timerange{
 		From: from,
-		To: from.Add(args.TimerangeSize),
-	} 
+		To:   from.Add(args.TimerangeSize),
+	}
 
 	record := odoo.OdooMeteredBillingRecord{
 		ProductID:            args.ProductID,
-		InstanceID:           instance,
-		ItemDescription:      description,
-		ItemGroupDescription: group,
+		InstanceID:           instanceStr,
+		ItemDescription:      descriptionStr,
+		ItemGroupDescription: groupStr,
 		SalesOrderID:         salesOrderID,
 		UnitID:               args.UnitID,
 		ConsumedUnits:        float64(s.Value),
@@ -174,7 +173,7 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 func extractTemplateVars(args ReportArgs) []string {
 	// given all the patterns, return list of template variables
 	regex := regexp.MustCompile(`%\((\w+)\)s`)
-	searchString := args.InstancePattern + ":" + args.ItemGroupDescriptionPattern + ":" + args.ItemDescriptionPattern
+	searchString := args.InstanceJsonnet + ":" + args.ItemGroupDescriptionJsonnet + ":" + args.ItemDescriptionJsonnet
 	matches := regex.FindAllStringSubmatch(searchString, -1)
 
 	vars := make([]string, len(matches))
