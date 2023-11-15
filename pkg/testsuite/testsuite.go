@@ -10,15 +10,13 @@ import (
 	"github.com/prometheus/client_golang/api"
 	apiv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/stretchr/testify/require"
-
-	"github.com/appuio/appuio-cloud-reporting/pkg/db/dbtest"
+	"github.com/stretchr/testify/suite"
 )
 
 // Suite holds a dbtest.Suite and a lazily started prometheus server.
 // Each Suite holds its own Prometheus server. Suites can be run in parallel.
 type Suite struct {
-	dbtest.Suite
-
+	suite.Suite
 	// promMutex guards all prom* variables below.
 	promMutex        sync.Mutex
 	promAddr         string
@@ -62,8 +60,6 @@ func (ts *Suite) PrometheusAPIClient() apiv1.API {
 
 // TearDownSuite stops prometheus and drops the temporary database.
 func (ts *Suite) TearDownSuite() {
-	ts.Suite.TearDownSuite()
-
 	ts.promMutex.Lock()
 	defer ts.promMutex.Unlock()
 

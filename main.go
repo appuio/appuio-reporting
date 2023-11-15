@@ -20,7 +20,7 @@ var (
 	commit  = "-dirty-"
 	date    = time.Now().Format("2006-01-02")
 
-	appName     = "appuio-cloud-reporting"
+	appName     = "appuio-reporting"
 	appLongName = "Reporting for APPUiO Cloud"
 
 	// envPrefix is the global prefix to use for the keys in environment variables
@@ -65,11 +65,7 @@ func newApp() (context.Context, context.CancelFunc, *cli.App) {
 			},
 		},
 		Commands: []*cli.Command{
-			newMigrateCommand(),
 			newReportCommand(),
-			newCheckMissingCommand(),
-			newInvoiceCommand(),
-			newTmapCommand(),
 		},
 		ExitErrHandler: func(context *cli.Context, err error) {
 			if err == nil {

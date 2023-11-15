@@ -26,7 +26,7 @@ build: build-bin build-docker ## All-in-one build
 .PHONY: build-bin
 build-bin: export CGO_ENABLED = 0
 build-bin: fmt vet ## Build binary
-	@go build -o $(BIN_FILENAME) github.com/appuio/appuio-cloud-reporting
+	@go build -o $(BIN_FILENAME) github.com/appuio/appuio-reporting
 
 .PHONY: build-docker
 build-docker: build-bin ## Build docker image
@@ -37,23 +37,8 @@ ensure-prometheus: .cache/prometheus ## Ensures that Prometheus is installed in 
 
 .PHONY: test
 test: export ACR_DB_URL = postgres://user:password@localhost:55432/db?sslmode=disable
-test: COMPOSE_FILE = docker-compose-test.yml
-test: compose_args = -p reporting-test
-test: ensure-prometheus docker-compose-down ping-postgres ## Run full test suite
-	go run github.com/appuio/appuio-cloud-reporting migrate
-	go run github.com/appuio/appuio-cloud-reporting migrate --seed
+test: ensure-prometheus
 	go test ./... -tags integration -coverprofile cover.out -covermode atomic
-	@$(COMPOSE_CMD) $(compose_args) down
-
-.PHONY: gen-golden
-gen-golden:  export ACR_DB_URL = postgres://user:password@localhost:55432/db?sslmode=disable
-gen-golden: COMPOSE_FILE = docker-compose-test.yml
-gen-golden: compose_args = -p reporting-test
-gen-golden: ensure-prometheus docker-compose-down ping-postgres ## Update golden files
-	go run github.com/appuio/appuio-cloud-reporting migrate
-	go run github.com/appuio/appuio-cloud-reporting migrate --seed
-	go test ./pkg/invoice -update
-	@$(COMPOSE_CMD) $(compose_args) down
 
 .PHONY: fmt
 fmt: ## Run 'go fmt' and `jsonnetfmt` against code
@@ -74,7 +59,7 @@ generate: ## Generate additional code and artifacts
 	@go generate ./...
 
 .PHONY: clean
-clean: docker-compose-down ## Cleans local build artifacts
+clean:
 	rm -rf docs/node_modules $(docs_out_dir) dist .cache
 
 .cache/prometheus:

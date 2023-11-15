@@ -8,7 +8,7 @@ RUN \
     ca-certificates \
     tzdata
 
-ENTRYPOINT ["appuio-cloud-reporting"]
-COPY appuio-cloud-reporting /usr/bin/
+ENTRYPOINT ["appuio-reporting"]
+COPY appuio-reporting /usr/bin/
 
 USER 65536:0
