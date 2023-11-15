@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/go-logr/logr"
 	"golang.org/x/oauth2/clientcredentials"
@@ -31,7 +32,20 @@ type OdooMeteredBillingRecord struct {
 	SalesOrderID         string  `json:"sales_order_id"`
 	UnitID               string  `json:"unit_id"`
 	ConsumedUnits        float64 `json:"consumed_units"`
-	Timerange            string  `json:"timerange"`
+	Timerange            Timerange  `json:"timerange"`
+}
+
+type Timerange struct {
+	From time.Time
+	To time.Time
+}
+
+func (t Timerange) MarshalJSON() ([]byte, error) {
+	return []byte(`"` +  t.From.Format(time.RFC3339) + "/" + t.To.Format(time.RFC3339) + `"`), nil
+}
+
+func (t *Timerange) UnmarshalJSON([]byte) (error) {
+	return errors.New("Not implemented")
 }
 
 func NewOdooAPIClient(ctx context.Context, odooURL string, oauthTokenURL string, oauthClientId string, oauthClientSecret string, logger logr.Logger) *OdooAPIClient {
@@ -60,7 +74,10 @@ func (c OdooAPIClient) SendData(ctx context.Context, data []OdooMeteredBillingRe
 	apiObject := apiObject{
 		Data: data,
 	}
-	str, _ := json.Marshal(apiObject)
+	str, err := json.Marshal(apiObject)
+	if err != nil {
+		return err
+	}
 	resp, err := c.oauthClient.Post(c.odooURL, "application/json", bytes.NewBuffer(str))
 	if err != nil {
 		return err

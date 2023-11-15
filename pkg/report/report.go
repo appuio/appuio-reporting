@@ -152,7 +152,10 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 	}
 	description = strings.Trim(description, "\"\n")
 
-	timerange := from.Format(time.RFC3339) + "/" + from.Add(args.TimerangeSize).Format(time.RFC3339)
+	timerange := odoo.Timerange{
+		From: from,
+		To: from.Add(args.TimerangeSize),
+	} 
 
 	record := odoo.OdooMeteredBillingRecord{
 		ProductID:            args.ProductID,
