@@ -3,7 +3,7 @@ module github.com/appuio/appuio-reporting
 go 1.19
 
 require (
-	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/logr v1.3.0
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/go-jsonnet v0.19.1
 	github.com/prometheus/client_golang v1.14.0
