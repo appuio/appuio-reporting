@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/appuio/appuio-cloud-reporting/pkg/odoo"
@@ -131,7 +130,10 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 		return nil, err
 	}
 	instanceStr := ""
-	json.Unmarshal([]byte(instance), &instanceStr)
+	err = json.Unmarshal([]byte(instance), &instanceStr)
+	if err != nil {
+		return nil, err
+	}
 
 	var groupStr string
 	if args.ItemGroupDescriptionJsonnet != "" {
@@ -139,7 +141,10 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 		if err != nil {
 			return nil, err
 		}
-		json.Unmarshal([]byte(group), &groupStr)
+		err = json.Unmarshal([]byte(group), &groupStr)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var descriptionStr string
@@ -148,7 +153,10 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 		if err != nil {
 			return nil, err
 		}
-		json.Unmarshal([]byte(description), &descriptionStr)
+		err = json.Unmarshal([]byte(description), &descriptionStr)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	timerange := odoo.Timerange{
@@ -168,21 +176,6 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 	}
 
 	return &record, nil
-}
-
-func extractTemplateVars(args ReportArgs) []string {
-	// given all the patterns, return list of template variables
-	regex := regexp.MustCompile(`%\((\w+)\)s`)
-	searchString := args.InstanceJsonnet + ":" + args.ItemGroupDescriptionJsonnet + ":" + args.ItemDescriptionJsonnet
-	matches := regex.FindAllStringSubmatch(searchString, -1)
-
-	vars := make([]string, len(matches))
-
-	for i := 0; i < len(matches); i++ {
-		vars[i] = matches[i][1]
-	}
-
-	return vars
 }
 
 func getMetricLabel(m model.Metric, name string) (model.LabelValue, error) {
