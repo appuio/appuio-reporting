@@ -47,7 +47,7 @@ func TestOdooRecordsSent(t *testing.T) {
 	err := uut.SendData(context.Background(), []odoo.OdooMeteredBillingRecord{getOdooRecord()})
 
 	require.NoError(t, err)
-	require.Equal(t, `{"data":[{"product_id":"my-product","instance_id":"my-instance","item_description":"my-description","item_group_description":"my-group","sales_order_id":"SO00000","unit_id":"my-unit","consumed_units":11.1,"timerange":"2022-02-22T22:22:22+01:00/2022-02-22T23:22:22+01:00"}]}`, mrt.receivedContent)
+	require.Equal(t, `{"data":[{"product_id":"my-product","instance_id":"my-instance","item_description":"my-description","item_group_description":"my-group","sales_order_id":"SO00000","unit_id":"my-unit","consumed_units":11.1,"timerange":"2022-02-22T22:22:22Z/2022-02-22T23:22:22Z"}]}`, mrt.receivedContent)
 }
 
 func TestErrorHandling(t *testing.T) {
@@ -122,9 +122,9 @@ func getOdooRecord() odoo.OdooMeteredBillingRecord {
 		ItemDescription:      "my-description",
 		ItemGroupDescription: "my-group",
 		ConsumedUnits:        11.1,
-		Timerange:            odoo.Timerange{
-			From: time.Date(2022, 2, 22, 22, 22, 22, 222, time.Local),
-			To: time.Date(2022, 2, 22, 23, 22, 22, 222, time.Local),
+		Timerange: odoo.Timerange{
+			From: time.Date(2022, 2, 22, 22, 22, 22, 222, time.UTC),
+			To:   time.Date(2022, 2, 22, 23, 22, 22, 222, time.UTC),
 		},
 	}
 }

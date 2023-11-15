@@ -25,26 +25,26 @@ type apiObject struct {
 }
 
 type OdooMeteredBillingRecord struct {
-	ProductID            string  `json:"product_id"`
-	InstanceID           string  `json:"instance_id"`
-	ItemDescription      string  `json:"item_description,omitempty"`
-	ItemGroupDescription string  `json:"item_group_description,omitempty"`
-	SalesOrderID         string  `json:"sales_order_id"`
-	UnitID               string  `json:"unit_id"`
-	ConsumedUnits        float64 `json:"consumed_units"`
-	Timerange            Timerange  `json:"timerange"`
+	ProductID            string    `json:"product_id"`
+	InstanceID           string    `json:"instance_id"`
+	ItemDescription      string    `json:"item_description,omitempty"`
+	ItemGroupDescription string    `json:"item_group_description,omitempty"`
+	SalesOrderID         string    `json:"sales_order_id"`
+	UnitID               string    `json:"unit_id"`
+	ConsumedUnits        float64   `json:"consumed_units"`
+	Timerange            Timerange `json:"timerange"`
 }
 
 type Timerange struct {
 	From time.Time
-	To time.Time
+	To   time.Time
 }
 
 func (t Timerange) MarshalJSON() ([]byte, error) {
-	return []byte(`"` +  t.From.Format(time.RFC3339) + "/" + t.To.Format(time.RFC3339) + `"`), nil
+	return []byte(`"` + t.From.Format(time.RFC3339) + "/" + t.To.Format(time.RFC3339) + `"`), nil
 }
 
-func (t *Timerange) UnmarshalJSON([]byte) (error) {
+func (t *Timerange) UnmarshalJSON([]byte) error {
 	return errors.New("Not implemented")
 }
 
