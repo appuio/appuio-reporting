@@ -31,6 +31,6 @@ export ACR_ODOO_OAUTH_CLIENT_ID="your_client_id" # see https://docs.central.vshn
 export ACR_ODOO_OAUTH_CLIENT_SECRET="your_client_secret"
 
 # Run a query
-go run . report --query 'sum by (label) (metric)' --begin "2023-07-08T13:00:00Z" --product-id "your-odoo-product-id" --instance-pattern "instance-%(label)s" --unit-id "your_odoo_unit_id" --timerange 1h --item-desc-pattern "This is a description." --item-group-desc-pattern "Instance %(label)s"
+go run . report --query 'sum by (label) (metric)' --begin "2023-07-08T13:00:00Z" --product-id "your-odoo-product-id" --instance-jsonnet 'local labels = std.extVar("labels"); "instance-%(label)s" % labels' --unit-id "your_odoo_unit_id" --timerange 1h --item-description-jsonnet '"This is a description."' --item-group-description-jsonnet 'local labels = std.extVar("labels"); "Instance %(label)s" % labels'
 
 ```

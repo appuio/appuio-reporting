@@ -132,14 +132,14 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 	instanceStr := ""
 	err = json.Unmarshal([]byte(instance), &instanceStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to interpolate instance template: %w", err)
 	}
 
 	var groupStr string
 	if args.ItemGroupDescriptionJsonnet != "" {
 		group, err := vm.EvaluateAnonymousSnippet("group.json", args.ItemGroupDescriptionJsonnet)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to interpolate group description template: %w", err)
 		}
 		err = json.Unmarshal([]byte(group), &groupStr)
 		if err != nil {
@@ -151,7 +151,7 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 	if args.ItemDescriptionJsonnet != "" {
 		description, err := vm.EvaluateAnonymousSnippet("description.json", args.ItemDescriptionJsonnet)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to interpolate description template: %w", err)
 		}
 		err = json.Unmarshal([]byte(description), &descriptionStr)
 		if err != nil {
