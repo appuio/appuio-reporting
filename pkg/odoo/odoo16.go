@@ -86,7 +86,7 @@ func (c OdooAPIClient) SendData(ctx context.Context, data []OdooMeteredBillingRe
 	body, _ := io.ReadAll(resp.Body)
 	c.logger.Info("Records sent to Odoo API", "status", resp.Status, "body", string(body), "numberOfRecords", len(data))
 
-	if resp.StatusCode/100 != 2 {
+	if resp.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("API error when sending records to Odoo:\n%s", body))
 	}
 
