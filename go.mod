@@ -8,7 +8,7 @@ require (
 	github.com/google/go-jsonnet v0.19.1
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common v0.40.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.24.4
 	go.uber.org/multierr v1.6.0
 	go.uber.org/zap v1.24.0
