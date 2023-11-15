@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/appuio/appuio-cloud-reporting/pkg/odoo"
-	"github.com/appuio/appuio-cloud-reporting/pkg/report"
-	"github.com/appuio/appuio-cloud-reporting/pkg/testsuite"
+	"github.com/appuio/appuio-reporting/pkg/odoo"
+	"github.com/appuio/appuio-reporting/pkg/report"
+	"github.com/appuio/appuio-reporting/pkg/testsuite"
 )
 
 type ReportSuite struct {

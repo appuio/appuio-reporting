@@ -3,7 +3,7 @@ dist/
 .github/release-notes.md
 
 # Build
-appuio-cloud-reporting
+appuio-reporting
 *.out
 
 # Docs

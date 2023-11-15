@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/appuio/appuio-cloud-reporting/pkg/testsuite"
+	"github.com/appuio/appuio-reporting/pkg/testsuite"
 )
 
 type TestSuite struct {

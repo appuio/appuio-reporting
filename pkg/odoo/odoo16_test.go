@@ -12,7 +12,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/stretchr/testify/require"
 
-	"github.com/appuio/appuio-cloud-reporting/pkg/odoo"
+	"github.com/appuio/appuio-reporting/pkg/odoo"
 )
 
 type mockRoundTripper struct {

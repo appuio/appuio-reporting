@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/appuio/appuio-cloud-reporting/pkg/odoo"
-	"github.com/appuio/appuio-cloud-reporting/pkg/report"
-	"github.com/appuio/appuio-cloud-reporting/pkg/thanos"
+	"github.com/appuio/appuio-reporting/pkg/odoo"
+	"github.com/appuio/appuio-reporting/pkg/report"
+	"github.com/appuio/appuio-reporting/pkg/thanos"
 	"github.com/prometheus/client_golang/api"
 	apiv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/urfave/cli/v2"

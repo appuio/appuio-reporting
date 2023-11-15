@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appuio/appuio-cloud-reporting/pkg/odoo"
+	"github.com/appuio/appuio-reporting/pkg/odoo"
 	"github.com/google/go-jsonnet"
 	apiv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"

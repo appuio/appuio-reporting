@@ -1,7 +1,7 @@
 ## These are some common variables for Make
 
 PROJECT_ROOT_DIR = .
-PROJECT_NAME ?= appuio-cloud-reporting
+PROJECT_NAME ?= appuio-reporting
 PROJECT_OWNER ?= appuio
 
 ## BUILD:go

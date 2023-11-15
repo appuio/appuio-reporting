@@ -1,15 +1,15 @@
-# APPUiO Cloud Reporting
+# APPUiO Reporting
 
-[![Build](https://img.shields.io/github/workflow/status/appuio/appuio-cloud-reporting/Test)][build]
-![Go version](https://img.shields.io/github/go-mod/go-version/appuio/appuio-cloud-reporting)
-[![Version](https://img.shields.io/github/v/release/appuio/appuio-cloud-reporting)][releases]
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/appuio/appuio-cloud-reporting)][codeclimate]
-[![Coverage](https://img.shields.io/codeclimate/coverage/appuio/appuio-cloud-reporting)][codeclimate]
-[![GitHub downloads](https://img.shields.io/github/downloads/appuio/appuio-cloud-reporting/total)][releases]
+[![Build](https://img.shields.io/github/workflow/status/appuio/appuio-reporting/Test)][build]
+![Go version](https://img.shields.io/github/go-mod/go-version/appuio/appuio-reporting)
+[![Version](https://img.shields.io/github/v/release/appuio/appuio-reporting)][releases]
+[![Maintainability](https://img.shields.io/codeclimate/maintainability/appuio/appuio-reporting)][codeclimate]
+[![Coverage](https://img.shields.io/codeclimate/coverage/appuio/appuio-reporting)][codeclimate]
+[![GitHub downloads](https://img.shields.io/github/downloads/appuio/appuio-reporting/total)][releases]
 
-[build]: https://github.com/appuio/appuio-cloud-reporting/actions?query=workflow%3ATest
-[releases]: https://github.com/appuio/appuio-cloud-reporting/releases
-[codeclimate]: https://codeclimate.com/github/appuio/appuio-cloud-reporting
+[build]: https://github.com/appuio/appuio-reporting/actions?query=workflow%3ATest
+[releases]: https://github.com/appuio/appuio-reporting/releases
+[codeclimate]: https://codeclimate.com/github/appuio/appuio-reporting
 
 ## Usage
 
