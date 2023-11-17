@@ -36,7 +36,6 @@ build-docker: build-bin ## Build docker image
 ensure-prometheus: .cache/prometheus ## Ensures that Prometheus is installed in the project dir. Downloads it if necessary.
 
 .PHONY: test
-test: export ACR_DB_URL = postgres://user:password@localhost:55432/db?sslmode=disable
 test: ensure-prometheus
 	go test ./... -tags integration -coverprofile cover.out -covermode atomic
 

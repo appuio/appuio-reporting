@@ -24,7 +24,7 @@ var (
 	appLongName = "Reporting for APPUiO Cloud"
 
 	// envPrefix is the global prefix to use for the keys in environment variables
-	envPrefix = "ACR"
+	envPrefix = "AR"
 )
 
 func main() {
