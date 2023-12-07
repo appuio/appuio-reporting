@@ -90,7 +90,7 @@ func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args
 	}
 
 	var errs error
-	var records []odoo.OdooMeteredBillingRecord
+	records := make([]odoo.OdooMeteredBillingRecord, 0, len(samples))
 	for _, sample := range samples {
 		record, err := processSample(ctx, odooClient, args, from, sample)
 		if err != nil {

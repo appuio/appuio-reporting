@@ -21,7 +21,7 @@ type OdooAPIClient struct {
 }
 
 type apiObject struct {
-	Data []OdooMeteredBillingRecord `json:"data"`
+	Data ensureJSONArray[OdooMeteredBillingRecord] `json:"data"`
 }
 
 type OdooMeteredBillingRecord struct {
@@ -72,7 +72,7 @@ func NewOdooAPIWithClient(odooURL string, client *http.Client, logger logr.Logge
 
 func (c OdooAPIClient) SendData(ctx context.Context, data []OdooMeteredBillingRecord) error {
 	apiObject := apiObject{
-		Data: data,
+		Data: ensureJSONArray[OdooMeteredBillingRecord](data),
 	}
 	str, err := json.Marshal(apiObject)
 	if err != nil {
@@ -91,4 +91,14 @@ func (c OdooAPIClient) SendData(ctx context.Context, data []OdooMeteredBillingRe
 	}
 
 	return nil
+}
+
+// ensureJSONArray is a wrapper around any slice that will marshal to an empty array instead of `null` if the array is nil.
+type ensureJSONArray[T any] []T
+
+func (a ensureJSONArray[T]) MarshalJSON() ([]byte, error) {
+	if a == nil {
+		return []byte("[]"), nil
+	}
+	return json.Marshal([]T(a))
 }
