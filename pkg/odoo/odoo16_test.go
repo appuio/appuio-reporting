@@ -44,10 +44,11 @@ func TestOdooRecordsSent(t *testing.T) {
 	logger := logr.New(logr.Discard().GetSink())
 	uut := odoo.NewOdooAPIWithClient("https://foo.bar/odoo16/", &client, logger)
 
-	err := uut.SendData(context.Background(), []odoo.OdooMeteredBillingRecord{getOdooRecord()})
-
-	require.NoError(t, err)
+	require.NoError(t, uut.SendData(context.Background(), []odoo.OdooMeteredBillingRecord{getOdooRecord()}))
 	require.Equal(t, `{"data":[{"product_id":"my-product","instance_id":"my-instance","item_description":"my-description","item_group_description":"my-group","sales_order_id":"SO00000","unit_id":"my-unit","consumed_units":11.1,"timerange":"2022-02-22T22:22:22Z/2022-02-22T23:22:22Z"}]}`, mrt.receivedContent)
+
+	require.NoError(t, uut.SendData(context.Background(), nil))
+	require.Equal(t, `{"data":[]}`, mrt.receivedContent, "client should ensure that the data field is always represented as an array")
 }
 
 func TestErrorHandling(t *testing.T) {
