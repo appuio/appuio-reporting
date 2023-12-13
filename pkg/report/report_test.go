@@ -36,7 +36,7 @@ const promTestquery = `
 			),
 			"tenant", "my-tenant", "", ""
 		),
-	"sales_order_id", "SO00000", "", ""
+	"sales_order", "SO00000", "", ""
 	)
 `
 const promInvalidTestquery = `

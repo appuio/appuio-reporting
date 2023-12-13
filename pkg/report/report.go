@@ -32,7 +32,7 @@ type ReportArgs struct {
 	OverrideSalesOrderID        string
 }
 
-const SalesOrderIDLabel = "sales_order_id"
+const SalesOrderLabel = "sales_order"
 
 // RunRange executes prometheus queries like Run() until the `until` timestamp is reached or an error occurred.
 // Returns the number of reports run and a possible error.
@@ -110,7 +110,7 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 	if args.OverrideSalesOrderID != "" {
 		salesOrderID = args.OverrideSalesOrderID
 	} else {
-		sid, err := getMetricLabel(s.Metric, SalesOrderIDLabel)
+		sid, err := getMetricLabel(s.Metric, SalesOrderLabel)
 		if err != nil {
 			return nil, err
 		}
