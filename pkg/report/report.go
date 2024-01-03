@@ -89,6 +89,10 @@ func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args
 		return fmt.Errorf("expected prometheus query to return a model.Vector, got %T", res)
 	}
 
+	if samples.Len() == 0 {
+		return nil
+	}
+
 	var errs error
 	records := make([]odoo.OdooMeteredBillingRecord, 0, len(samples))
 	for _, sample := range samples {
