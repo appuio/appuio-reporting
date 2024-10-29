@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/appuio/appuio-reporting/pkg/odoo"
@@ -103,18 +102,6 @@ func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args
 		} else {
 			records = append(records, *record)
 		}
-	}
-
-	// print the records to stdout for preview
-	for _, record := range records {
-		m, err := json.Marshal(record)
-		if err != nil {
-			// can't use the logger from the context here, since the required context key is in the main package 🙃
-			// TODO(bastjan) fix the suboptimal and overcomplicated logging setup
-			fmt.Fprintf(os.Stderr, "warning: failed to marshal record for preview: %+v; error: %s\n", record, err)
-			continue
-		}
-		fmt.Fprintf(os.Stdout, "%s\n", m)
 	}
 
 	return multierr.Append(errs, odooClient.SendData(ctx, records))

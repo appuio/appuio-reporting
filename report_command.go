@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/appuio/appuio-reporting/pkg/odoo"
@@ -122,8 +121,11 @@ func (cmd *reportCommand) runReportRange(ctx context.Context, odooClient *odoo.O
 
 	started := time.Now()
 	reporter := report.WithProgressReporter(func(p report.Progress) {
-		fmt.Fprintf(os.Stderr, "Report %d, Current: %s [%s]\n",
-			p.Count, p.Timestamp.Format(time.RFC3339), time.Since(started).Round(time.Second),
+		log.Info("Progress report",
+			"product", cmd.ReportArgs.ProductID,
+			"reportIndex", p.Count,
+			"timestamp", p.Timestamp.Format(time.RFC3339),
+			"timeElapsed", time.Since(started).Round(time.Second),
 		)
 	})
 
