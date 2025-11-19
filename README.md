@@ -20,7 +20,7 @@
 oc login --server=https://api.cloudscale-lpg-2.appuio.cloud:6443
 
 # Forward mimir to local host
-kubectl --as cluster-admin -nvshn-appuio-mimir service/vshn-appuio-mimir-query-frontend 8080
+kubectl --as=system:admin -nvshn-appuio-mimir service/vshn-appuio-mimir-query-frontend 8080
 
 # Set environment
 export AR_PROM_URL="http://localhost:8080/prometheus"
