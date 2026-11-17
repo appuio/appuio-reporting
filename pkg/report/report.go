@@ -2,6 +2,7 @@ package report
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -34,9 +35,16 @@ type ReportArgs struct {
 
 const SalesOrderLabel = "sales_order"
 
+//go:embed somap.json
+var somap_raw []byte
+var somap map[string]string
+
 // RunRange executes prometheus queries like Run() until the `until` timestamp is reached or an error occurred.
 // Returns the number of reports run and a possible error.
 func RunRange(ctx context.Context, odoo OdooClient, prom PromQuerier, args ReportArgs, from time.Time, until time.Time, options ...Option) (int, error) {
+	if err := json.Unmarshal(somap_raw, &somap); err != nil {
+		return 0, fmt.Errorf("Could not parse embedded JSON: %w", err)
+	}
 	opts := buildOptions(options)
 
 	n := 0
@@ -56,6 +64,9 @@ func RunRange(ctx context.Context, odoo OdooClient, prom PromQuerier, args Repor
 // Run executes a prometheus query loaded from queries with using the `queryName` and the timestamp.
 // The results of the query are saved in the facts table.
 func Run(ctx context.Context, odoo OdooClient, prom PromQuerier, args ReportArgs, from time.Time, options ...Option) error {
+	if err := json.Unmarshal(somap_raw, &somap); err != nil {
+		return fmt.Errorf("Could not parse embedded JSON: %w", err)
+	}
 	opts := buildOptions(options)
 
 	from = from.In(time.UTC)
@@ -111,15 +122,26 @@ func processSample(ctx context.Context, odooClient OdooClient, args ReportArgs, 
 	metricLabels := s.Metric
 
 	salesOrderID := ""
-	if args.OverrideSalesOrderID != "" {
-		salesOrderID = args.OverrideSalesOrderID
-	} else {
-		sid, err := getMetricLabel(s.Metric, SalesOrderLabel)
-		if err != nil {
-			return nil, err
-		}
-		salesOrderID = string(sid)
+	// if args.OverrideSalesOrderID != "" {
+	// 	salesOrderID = args.OverrideSalesOrderID
+	// } else {
+	// 	sid, err := getMetricLabel(s.Metric, SalesOrderLabel)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	salesOrderID = string(sid)
+	// }
+
+	org, err := getMetricLabel(s.Metric, "organization")
+	if err != nil {
+		return nil, err
 	}
+	salesOrderID, ok := somap[string(org)]
+	if !ok {
+		return nil, fmt.Errorf("Could not find organization in sales order map: %s", org)
+	}
+
+	// fmt.Printf("Mapped organization %s to sales order %s, with value %f\n", org, salesOrderID, s.Value)
 
 	labelList, err := json.Marshal(metricLabels)
 	if err != nil {
