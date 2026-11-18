@@ -76,6 +76,8 @@ func newReportCommand() *cli.Command {
 				EnvVars: envVars("ORG_ID"), Destination: &command.OrgId, Required: false, DefaultText: "empty"},
 			&cli.StringFlag{Name: "debug-override-sales-order-id", Usage: "Overrides the sales order ID to a static constant for debugging purposes", Value: "",
 				EnvVars: envVars("DEBUG_OVERRIDE_SALES_ORDER_ID"), Destination: &command.ReportArgs.OverrideSalesOrderID, Required: false, DefaultText: "empty"},
+			&cli.BoolFlag{Name: "write-json", Usage: "Write report to stdout as JSON instead of sending to Odoo",
+				EnvVars: envVars("WRITE_JSON"), Destination: &command.ReportArgs.WriteJSON, Required: false, DefaultText: "false"},
 		},
 	}
 }
