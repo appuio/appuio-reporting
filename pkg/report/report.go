@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/appuio/appuio-reporting/pkg/odoo"
@@ -30,6 +31,7 @@ type ReportArgs struct {
 	ProductID                   string
 	TimerangeSize               time.Duration
 	OverrideSalesOrderID        string
+	JSONWriter                  io.Writer
 }
 
 const SalesOrderLabel = "sales_order"
@@ -102,6 +104,15 @@ func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args
 		} else {
 			records = append(records, *record)
 		}
+	}
+
+	if args.JSONWriter != nil {
+		rjson, err := json.Marshal(records)
+		if err != nil {
+			return multierr.Append(errs, err)
+		}
+		fmt.Fprintf(args.JSONWriter, "%s\n", string(rjson))
+		return errs
 	}
 
 	return multierr.Append(errs, odooClient.SendData(ctx, records))

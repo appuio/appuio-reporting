@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/appuio/appuio-reporting/pkg/odoo"
@@ -21,6 +22,7 @@ type reportCommand struct {
 	OdooClientSecret  string
 
 	ReportArgs report.ReportArgs
+	stdoutJSON bool
 
 	Begin       *time.Time
 	RepeatUntil *time.Time
@@ -76,6 +78,8 @@ func newReportCommand() *cli.Command {
 				EnvVars: envVars("ORG_ID"), Destination: &command.OrgId, Required: false, DefaultText: "empty"},
 			&cli.StringFlag{Name: "debug-override-sales-order-id", Usage: "Overrides the sales order ID to a static constant for debugging purposes", Value: "",
 				EnvVars: envVars("DEBUG_OVERRIDE_SALES_ORDER_ID"), Destination: &command.ReportArgs.OverrideSalesOrderID, Required: false, DefaultText: "empty"},
+			&cli.BoolFlag{Name: "write-json", Usage: "Write report to stdout as JSON instead of sending to Odoo",
+				EnvVars: envVars("WRITE_JSON"), Destination: &command.stdoutJSON, Required: false, DefaultText: "false"},
 		},
 	}
 }
@@ -100,6 +104,10 @@ func (cmd *reportCommand) execute(cliCtx *cli.Context) error {
 	o := make([]report.Option, 0)
 	if cmd.PromQueryTimeout != 0 {
 		o = append(o, report.WithPrometheusQueryTimeout(cmd.PromQueryTimeout))
+	}
+
+	if cmd.stdoutJSON {
+		cmd.ReportArgs.JSONWriter = os.Stdout
 	}
 
 	if cmd.RepeatUntil != nil {
