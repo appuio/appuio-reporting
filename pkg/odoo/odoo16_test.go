@@ -2,6 +2,7 @@ package odoo_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -112,6 +113,54 @@ func TestErrorFromServerRaisesError(t *testing.T) {
 	err := uut.SendData(context.Background(), []odoo.OdooMeteredBillingRecord{getOdooRecord()})
 
 	require.Error(t, err)
+}
+
+func Test_Timerange_UnmarshalJSON(t *testing.T) {
+	cases := []struct {
+		r string
+		e odoo.Timerange
+	}{
+		{
+			"\"2026-11-24T11:00:00Z/2026-11-24T12:00:00Z\"",
+			odoo.Timerange{
+				From: time.Date(2026, time.November, 24, 11, 0, 0, 0, time.UTC),
+				To:   time.Date(2026, time.November, 24, 12, 0, 0, 0, time.UTC),
+			},
+		},
+		{
+			"\"2026-11-24T11:00:00+01:00/2026-11-24T12:00:00+01:00\"",
+			odoo.Timerange{
+				From: time.Date(2026, time.November, 24, 10, 0, 0, 0, time.UTC),
+				To:   time.Date(2026, time.November, 24, 11, 0, 0, 0, time.UTC),
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		var r odoo.Timerange
+		err := json.Unmarshal([]byte(tc.r), &r)
+		require.NoError(t, err)
+		require.Equal(t, tc.e, r)
+	}
+}
+
+func Test_Timerange_UnmarshalJSON_Error(t *testing.T) {
+	cases := []struct {
+		r string
+		e error
+	}{
+		{"0", errors.New("Expected timerange to be a string")},
+		{"\"\"", errors.New("Expected timerange to have shape '<from>/<to>'")},
+		{"\"from/\"", errors.New("Expected timerange <from> to be RFC3339: parsing time \"from\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"from\" as \"2006\"")},
+		{"\"2026-11-24T11:00:00Z/to\"", errors.New("Expected timerange <to> to be RFC3339: parsing time \"to\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"to\" as \"2006\"")},
+	}
+
+	for _, tc := range cases {
+		var r odoo.Timerange
+		err := json.Unmarshal([]byte(tc.r), &r)
+		require.Error(t, err)
+		require.Equal(t, tc.e, err)
+	}
 }
 
 func getOdooRecord() odoo.OdooMeteredBillingRecord {
