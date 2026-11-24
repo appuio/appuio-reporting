@@ -1,7 +1,9 @@
 package report_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -110,6 +112,30 @@ func (s *ReportSuite) TestReport_Run() {
 	require.Equal(t, "my-product", o.lastReceivedData[0].ItemDescription)
 	require.Equal(t, 1.0, o.lastReceivedData[0].ConsumedUnits)
 	require.Equal(t, "SO00000", o.lastReceivedData[0].SalesOrderID)
+}
+
+func (s *ReportSuite) TestReport_Run_WriteJSON() {
+	t := s.T()
+	o := &MockOdooClient{}
+	prom := s.PrometheusAPIClient()
+	args := getReportArgs()
+
+	args.InstanceJsonnet = `local labels = std.extVar("labels"); "%(tenant)s" % labels`
+	args.ItemGroupDescriptionJsonnet = `local labels = std.extVar("labels"); "%(namespace)s" % labels`
+	args.ItemDescriptionJsonnet = `local labels = std.extVar("labels"); "%(product)s" % labels`
+	buf := bytes.Buffer{}
+	args.JSONWriter = &buf
+
+	from := time.Date(2020, time.January, 23, 17, 0, 0, 0, time.UTC)
+
+	err := report.Run(context.Background(), o, prom, args, from)
+	require.NoError(t, err)
+
+	require.Equal(t, 0, len(o.lastReceivedData))
+	var written []odoo.OdooMeteredBillingRecord
+	err = json.Unmarshal(buf.Bytes(), &written)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(written))
 }
 
 func (s *ReportSuite) TestReport_RequireErrorWhenInvalidTemplateVariable() {
