@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -44,8 +45,26 @@ func (t Timerange) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.From.Format(time.RFC3339) + "/" + t.To.Format(time.RFC3339) + `"`), nil
 }
 
-func (t *Timerange) UnmarshalJSON([]byte) error {
-	return errors.New("Not implemented")
+func (t *Timerange) UnmarshalJSON(rb []byte) error {
+	if rb[0] != '"' || rb[len(rb)-1] != '"' {
+		return errors.New("Expected timerange to be a string")
+	}
+	r := string(rb[1 : len(rb)-1])
+	parts := strings.Split(r, "/")
+	if len(parts) != 2 {
+		return errors.New("Expected timerange to have shape '<from>/<to>'")
+	}
+	from, err := time.Parse(time.RFC3339, parts[0])
+	if err != nil {
+		return fmt.Errorf("Expected timerange <from> to be RFC3339: %v", err)
+	}
+	to, err := time.Parse(time.RFC3339, parts[1])
+	if err != nil {
+		return fmt.Errorf("Expected timerange <to> to be RFC3339: %v", err)
+	}
+	t.From = from.UTC()
+	t.To = to.UTC()
+	return nil
 }
 
 func NewOdooAPIClient(ctx context.Context, odooURL string, oauthTokenURL string, oauthClientId string, oauthClientSecret string, logger logr.Logger) *OdooAPIClient {
