@@ -15,7 +15,7 @@ import (
 )
 
 type PromQuerier interface {
-	Query(ctx context.Context, query string, ts time.Time, opts ...apiv1.Option) (model.Value, apiv1.Warnings, error)
+	Query(ctx context.Context, query string, ts time.Time, opts ...apiv1.Option) (model.Value, apiv1.Warnings, apiv1.Infos, error)
 }
 
 type OdooClient interface {
@@ -81,7 +81,7 @@ func runQuery(ctx context.Context, odooClient OdooClient, prom PromQuerier, args
 	}
 
 	// The data in the database is from T to T+1h. Prometheus queries backwards from T to T-1h.
-	res, _, err := prom.Query(promQCtx, args.Query, from.Add(args.TimerangeSize))
+	res, _, _, err := prom.Query(promQCtx, args.Query, from.Add(args.TimerangeSize))
 	if err != nil {
 		return fmt.Errorf("failed to query prometheus: %w", err)
 	}
